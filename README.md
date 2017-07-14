@@ -1,5 +1,7 @@
 # protobuild
 
+[![Build Status](https://travis-ci.org/stevvooe/protobuild.svg?branch=master)](https://travis-ci.org/stevvooe/protobuild)
+
 Build protobufs in Go, easily.
 
 `protobuild` works by scanning the go package in a project and emitting correct
