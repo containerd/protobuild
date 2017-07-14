@@ -9,7 +9,6 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
-	"text/template"
 )
 
 // defines several variables for parameterizing the protoc command. We can pull
@@ -49,44 +48,7 @@ var (
 		"google/protobuf/descriptor.proto": "github.com/gogo/protobuf/protoc-gen-gogo/descriptor",
 		"gogoproto/gogo.proto":             "github.com/gogo/protobuf/gogoproto",
 	}
-
-	tmpl = template.Must(template.New("protoc").Parse(`protoc -I
-	{{- range $index, $include := .Includes -}}
-		{{if $index}}:{{end -}}
-			{{.}}
-		{{- end }} --
-	{{- .Name -}}_out=plugins={{- range $index, $plugin := .Plugins -}}
-		{{- if $index}}+{{end}}
-		{{- $plugin}}
-	{{- end -}}
-	,import_path={{.ImportPath}}
-	{{- range $proto, $gopkg := .PackageMap -}},M
-		{{- $proto}}={{$gopkg -}}
-	{{- end -}}
-	:{{- .OutputDir }}
-	{{- range .Files}} {{.}}{{end -}}
-`))
 )
-
-// Protoc defines inputs to a protoc command string.
-type Protoc struct {
-	Name       string // backend name
-	Includes   []string
-	Plugins    []string
-	ImportPath string
-	PackageMap map[string]string
-	Files      []string
-	OutputDir  string
-}
-
-func (p *Protoc) mkcmd() (string, error) {
-	var buf bytes.Buffer
-	if err := tmpl.Execute(&buf, p); err != nil {
-		return "", err
-	}
-
-	return buf.String(), nil
-}
 
 func init() {
 	flag.BoolVar(&dryRun, "dryrun", false, "prints commands without running")
@@ -136,7 +98,7 @@ func main() {
 		includes = append(includes, vendor, gopath)
 		includes = append(includes, postIncludePaths...)
 
-		protoc := Protoc{
+		protoc := protocCmd{
 			Name:       generationPlugin,
 			ImportPath: pkg.GoImportPath,
 			PackageMap: packageMap,
@@ -157,12 +119,8 @@ func main() {
 			continue
 		}
 
-		// pass to sh -c so we don't need to re-split here.
-		args := []string{"-c", arg}
-		cmd := exec.Command("sh", args...)
-		out, err := cmd.CombinedOutput()
-		if err != nil {
-			log.Fatalf("%s %s\n", out, err)
+		if err := protoc.run(); err != nil {
+			log.Fatalln(err)
 		}
 	}
 }
