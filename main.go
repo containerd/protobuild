@@ -9,53 +9,28 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"syscall"
 )
 
 // defines several variables for parameterizing the protoc command. We can pull
 // this out into a toml files in cases where we to vary this per package.
 var (
-	dryRun bool
-
-	generationPlugin = "gogoctrd"
-
-	preIncludePaths = []string{
-		".",
-	}
-
-	// vendoredIncludes is used for packages that should be included as vendor
-	// directories. We don't differentiate between packages and projects here.
-	// This should just be the root of where the protos are included from.
-	vendoredIncludes = []string{
-		"github.com/gogo/protobuf",
-	}
-
-	// postIncludePaths defines untouched include paths to be added untouched
-	// to the protoc command.
-	postIncludePaths = []string{
-		"/usr/local/include", // common location for protoc installation of WKTs
-	}
-
-	plugins = []string{
-		"grpc",
-	}
-
-	// packageMap allows us to map protofile imports to specific Go packages. These
-	// becomes the M declarations at the end of the declaration.
-	packageMap = map[string]string{
-		"google/protobuf/timestamp.proto":  "github.com/gogo/protobuf/types",
-		"google/protobuf/any.proto":        "github.com/gogo/protobuf/types",
-		"google/protobuf/field_mask.proto": "github.com/gogo/protobuf/types",
-		"google/protobuf/descriptor.proto": "github.com/gogo/protobuf/protoc-gen-gogo/descriptor",
-		"gogoproto/gogo.proto":             "github.com/gogo/protobuf/gogoproto",
-	}
+	configPath string
+	dryRun     bool
 )
 
 func init() {
+	flag.StringVar(&configPath, "f", "Protobuild.toml", "override default config location")
 	flag.BoolVar(&dryRun, "dryrun", false, "prints commands without running")
 }
 
 func main() {
 	flag.Parse()
+
+	c, err := readConfig(configPath)
+	if err != nil {
+		log.Fatalln(err)
+	}
 
 	pkgInfos, err := goPkgInfo(flag.Args()...)
 	if err != nil {
@@ -79,30 +54,38 @@ func main() {
 
 	for _, pkg := range pkgInfos {
 		var includes []string
-		includes = append(includes, preIncludePaths...)
+		includes = append(includes, c.Includes.Before...)
 
 		vendor, err := closestVendorDir(pkg.Dir)
 		if err != nil {
-			log.Fatalln(err)
+			if err != errVendorNotFound {
+				log.Fatalln(err)
+			}
 		}
 
-		// we also special case the inclusion of gogoproto in the vendor dir.
-		// We could parameterize this better if we find it to be a common case.
-		var vendoredIncludesResolved []string
-		for _, vendoredInclude := range vendoredIncludes {
-			vendoredIncludesResolved = append(vendoredIncludesResolved,
-				filepath.Join(vendor, vendoredInclude))
+		if vendor != "" {
+			// we also special case the inclusion of gogoproto in the vendor dir.
+			// We could parameterize this better if we find it to be a common case.
+			var vendoredIncludesResolved []string
+			for _, vendoredInclude := range c.Includes.Vendored {
+				vendoredIncludesResolved = append(vendoredIncludesResolved,
+					filepath.Join(vendor, vendoredInclude))
+			}
+
+			includes = append(includes, vendoredIncludesResolved...)
+			includes = append(includes, vendor)
+		} else if len(c.Includes.Vendored) > 0 {
+			log.Println("ignoring vendored includes: vendor directory not found")
 		}
 
-		includes = append(includes, vendoredIncludesResolved...)
-		includes = append(includes, vendor, gopath)
-		includes = append(includes, postIncludePaths...)
+		includes = append(includes, gopath)
+		includes = append(includes, c.Includes.After...)
 
 		protoc := protocCmd{
-			Name:       generationPlugin,
+			Name:       c.Generator,
 			ImportPath: pkg.GoImportPath,
-			PackageMap: packageMap,
-			Plugins:    plugins,
+			PackageMap: c.Packages,
+			Plugins:    c.Plugins,
 			Files:      pkg.ProtoFiles,
 			OutputDir:  outputDir,
 			Includes:   includes,
@@ -120,6 +103,12 @@ func main() {
 		}
 
 		if err := protoc.run(); err != nil {
+			if err, ok := err.(*exec.ExitError); ok {
+				if status, ok := err.Sys().(syscall.WaitStatus); ok {
+					os.Exit(status.ExitStatus()) // proxy protoc exit status
+				}
+			}
+
 			log.Fatalln(err)
 		}
 	}
@@ -131,6 +120,7 @@ type protoGoPkgInfo struct {
 	ProtoFiles   []string
 }
 
+// goPkgInfo hunts down packages with proto files.
 func goPkgInfo(golistpath ...string) ([]protoGoPkgInfo, error) {
 	args := []string{
 		"list", "-e", "-f", "{{.ImportPath}} {{.Dir}}"}
@@ -200,6 +190,8 @@ func gopathCurrent() (string, error) {
 	return strings.Split(gopathAll, ":")[0], nil
 }
 
+var errVendorNotFound = fmt.Errorf("no vendor dir found")
+
 // closestVendorDir walks up from dir until it finds the vendor directory.
 func closestVendorDir(dir string) (string, error) {
 	dir = filepath.Clean(dir)
@@ -224,5 +216,5 @@ func closestVendorDir(dir string) (string, error) {
 		return vendor, nil
 	}
 
-	return "", fmt.Errorf("no vendor dir found")
+	return "", errVendorNotFound
 }

@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"log"
+	"os"
 	"os/exec"
 	"text/template"
 )
@@ -13,11 +14,11 @@ var (
 		{{if $index}}:{{end -}}
 			{{.}}
 		{{- end }} --
-	{{- .Name -}}_out=plugins={{- range $index, $plugin := .Plugins -}}
+	{{- .Name -}}_out={{if .Plugins}}plugins={{- range $index, $plugin := .Plugins -}}
 		{{- if $index}}+{{end}}
 		{{- $plugin}}
 	{{- end -}}
-	,import_path={{.ImportPath}}
+	,{{- end -}}import_path={{.ImportPath}}
 	{{- range $proto, $gopkg := .PackageMap -}},M
 		{{- $proto}}={{$gopkg -}}
 	{{- end -}}
@@ -55,5 +56,7 @@ func (p *protocCmd) run() error {
 	// pass to sh -c so we don't need to re-split here.
 	args := []string{"-c", arg}
 	cmd := exec.Command("sh", args...)
+	cmd.Stderr = os.Stderr
+	cmd.Stdout = os.Stdout
 	return cmd.Run()
 }
