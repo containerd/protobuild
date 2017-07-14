@@ -11,6 +11,10 @@ choice.
 It should work with both the default `golang/protobuf` and the `gogo`
 toolchain. If it doesn't, we should figure out how to get there.
 
+The main benefit is that it makes it much easier to consume external types from
+vendored projects. By integrating the protoc include paths with Go's vendoring
+and GOPATH, builds are much easier to keep consistent across a project.
+
 This comes from experience with generating protobufs with `go generate` in
 swarmkit and the tool used with containerd. It should replace both.
 
@@ -30,14 +34,24 @@ go get -u github.com/stevvooe/protobuild
 ## Usage
 
 Protobuild works by providing a list of Go packages in which to build the
-protobufs. Simply usage is as follows:
+protobufs. To get started with a project, you must do the following:
 
-```
-go list ./... | xargs protobuild
-```
+1. Create a `Protobuild.toml` file in the root of your Go project. Use the
+   [example](Protobuild.toml) as a starting point.
+
+2. Run the `protobuild` command:
+
+  ```
+  go list ./... | grep -v vendor | xargs protobuild
+  ```
 
 TODO(stevvooe): Make this better.
 
 ## Contributing
 
-Contributions are welcome. Please ensure that commits are signed off.
+Contributions are welcome.
+
+Please ensure that commits are signed off.
+
+For more complex PRs or design changes, please submit an issue for discussion
+first.
