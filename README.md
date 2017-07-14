@@ -40,10 +40,9 @@ protobufs. To get started with a project, you must do the following:
    [example](Protobuild.toml) as a starting point.
 
 2. Run the `protobuild` command:
-
-  ```
-  go list ./... | grep -v vendor | xargs protobuild
-  ```
+    ```
+    go list ./... | grep -v vendor | xargs protobuild
+    ```
 
 TODO(stevvooe): Make this better.
 
