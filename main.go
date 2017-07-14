@@ -15,6 +15,8 @@ import (
 // defines several variables for parameterizing the protoc command. We can pull
 // this out into a toml files in cases where we to vary this per package.
 var (
+	dryRun bool
+
 	generationPlugin = "gogoctrd"
 
 	preIncludePaths = []string{
@@ -86,6 +88,10 @@ func (p *Protoc) mkcmd() (string, error) {
 	return buf.String(), nil
 }
 
+func init() {
+	flag.BoolVar(&dryRun, "dryrun", false, "prints commands without running")
+}
+
 func main() {
 	flag.Parse()
 
@@ -146,6 +152,10 @@ func main() {
 		}
 
 		fmt.Println(arg)
+
+		if dryRun {
+			continue
+		}
 
 		// pass to sh -c so we don't need to re-split here.
 		args := []string{"-c", arg}
