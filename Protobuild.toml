@@ -17,7 +17,7 @@ plugins = ["grpc"]
   # treat the root of the project as an include, but this may not be necessary.
   #
   # "." is included by default
-  before = ["."]
+  # before = ["."]
 
   # Paths that should be treated as include roots in relation to the vendor
   # directory. These will be calculated with the vendor directory nearest the

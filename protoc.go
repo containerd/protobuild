@@ -5,13 +5,14 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"text/template"
 )
 
 var (
 	tmpl = template.Must(template.New("protoc").Parse(`protoc -I
 	{{- range $index, $include := .Includes -}}
-		{{if $index}}:{{end -}}
+		{{if $index}}` + string(filepath.ListSeparator) + `{{end -}}
 			{{.}}
 		{{- end }} --
 	{{- .Name -}}_out={{if .Plugins}}plugins={{- range $index, $plugin := .Plugins -}}
@@ -54,8 +55,8 @@ func (p *protocCmd) run() error {
 	}
 
 	// pass to sh -c so we don't need to re-split here.
-	args := []string{"-c", arg}
-	cmd := exec.Command("sh", args...)
+	args := []string{shArg, arg}
+	cmd := exec.Command(shCmd, args...)
 	cmd.Stderr = os.Stderr
 	cmd.Stdout = os.Stdout
 	return cmd.Run()
