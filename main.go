@@ -195,7 +195,7 @@ var errVendorNotFound = fmt.Errorf("no vendor dir found")
 // closestVendorDir walks up from dir until it finds the vendor directory.
 func closestVendorDir(dir string) (string, error) {
 	dir = filepath.Clean(dir)
-	for dir != filepath.VolumeName(dir)+string(filepath.Separator) {
+	for dir != filepath.Join(filepath.VolumeName(dir), string(filepath.Separator)) {
 		vendor := filepath.Join(dir, "vendor")
 		fi, err := os.Stat(vendor)
 		if err != nil {
