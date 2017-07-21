@@ -172,11 +172,11 @@ func gopathSrc() (string, error) {
 	}
 
 	var elements []string
-	for _, element := range strings.Split(gopathAll, ":") { // TODO(stevvooe): Make this work on windows.
+	for _, element := range strings.Split(gopathAll, string(filepath.ListSeparator)) {
 		elements = append(elements, filepath.Join(element, "src"))
 	}
 
-	return strings.Join(elements, ":"), nil
+	return strings.Join(elements, string(filepath.ListSeparator)), nil
 }
 
 // gopathCurrent provides the top-level gopath for the current generation.
@@ -187,7 +187,7 @@ func gopathCurrent() (string, error) {
 		return "", fmt.Errorf("must be run from a gopath")
 	}
 
-	return strings.Split(gopathAll, ":")[0], nil
+	return strings.Split(gopathAll, string(filepath.ListSeparator))[0], nil
 }
 
 var errVendorNotFound = fmt.Errorf("no vendor dir found")
@@ -195,7 +195,7 @@ var errVendorNotFound = fmt.Errorf("no vendor dir found")
 // closestVendorDir walks up from dir until it finds the vendor directory.
 func closestVendorDir(dir string) (string, error) {
 	dir = filepath.Clean(dir)
-	for dir != "" && dir != string(filepath.Separator) { // TODO(stevvooe): May not work on windows
+	for dir != filepath.VolumeName(dir)+string(filepath.Separator) {
 		vendor := filepath.Join(dir, "vendor")
 		fi, err := os.Stat(vendor)
 		if err != nil {
