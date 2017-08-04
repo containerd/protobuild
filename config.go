@@ -21,6 +21,12 @@ type config struct {
 	}
 
 	Packages map[string]string
+
+	Descriptors []struct {
+		Prefix      string
+		Target      string
+		IgnoreFiles []string `toml:"ignore_files"`
+	}
 }
 
 func newDefaultConfig() config {

@@ -4,12 +4,15 @@ import (
 	"bytes"
 	"flag"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
 	"syscall"
+
+	"github.com/golang/protobuf/protoc-gen-go/descriptor"
 )
 
 // defines several variables for parameterizing the protoc command. We can pull
@@ -52,6 +55,23 @@ func main() {
 	// this only in the case where you give it ".".
 	outputDir := filepath.Join(gopathCurrent, "src")
 
+	// Aggregate descriptors for each descriptor prefix.
+	descriptorSets := map[string]*descriptorSet{}
+	for _, stable := range c.Descriptors {
+		descriptorSets[stable.Prefix] = newDescriptorSet(stable.IgnoreFiles...)
+	}
+
+	shouldGenerateDescriptors := func(p string) bool {
+		for prefix := range descriptorSets {
+			if strings.HasPrefix(p, prefix) {
+				return true
+			}
+		}
+
+		return false
+	}
+
+	var descriptors []*descriptor.FileDescriptorSet
 	for _, pkg := range pkgInfos {
 		var includes []string
 		includes = append(includes, c.Includes.Before...)
@@ -91,6 +111,24 @@ func main() {
 			Includes:   includes,
 		}
 
+		importDirPath, err := filepath.Rel(outputDir, pkg.Dir)
+		if err != nil {
+			log.Fatalln(err)
+		}
+
+		var (
+			genDescriptors = shouldGenerateDescriptors(importDirPath)
+			dfp            *os.File // tempfile for descriptors
+		)
+
+		if genDescriptors {
+			dfp, err = ioutil.TempFile("", "descriptors.pb-")
+			if err != nil {
+				log.Fatalln(err)
+			}
+			protoc.Descriptors = dfp.Name()
+		}
+
 		arg, err := protoc.mkcmd()
 		if err != nil {
 			log.Fatalln(err)
@@ -109,6 +147,47 @@ func main() {
 				}
 			}
 
+			log.Fatalln(err)
+		}
+
+		if genDescriptors {
+			desc, err := readDesc(protoc.Descriptors)
+			if err != nil {
+				log.Fatalln(err)
+			}
+
+			for path, set := range descriptorSets {
+				if strings.HasPrefix(importDirPath, path) {
+					set.add(desc.File...)
+				}
+			}
+			descriptors = append(descriptors, desc)
+
+			// clean up descriptors file
+			if err := os.Remove(dfp.Name()); err != nil {
+				log.Fatalln(err)
+			}
+
+			if err := dfp.Close(); err != nil {
+				log.Fatalln(err)
+			}
+		}
+	}
+
+	for _, descriptorConfig := range c.Descriptors {
+		fp, err := os.OpenFile(descriptorConfig.Target, os.O_TRUNC|os.O_WRONLY|os.O_CREATE, 0777)
+		if err != nil {
+			log.Fatalln(err)
+		}
+		defer fp.Sync()
+		defer fp.Close()
+
+		set := descriptorSets[descriptorConfig.Prefix]
+		if len(set.merged.File) == 0 {
+			continue // just skip if there is nothing.
+		}
+
+		if err := set.marshalTo(fp); err != nil {
 			log.Fatalln(err)
 		}
 	}

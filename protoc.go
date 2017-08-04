@@ -14,7 +14,8 @@ var (
 	{{- range $index, $include := .Includes -}}
 		{{if $index}}` + string(filepath.ListSeparator) + `{{end -}}
 			{{.}}
-		{{- end }} --
+	{{- end -}}
+	{{- if .Descriptors}} --include_imports --descriptor_set_out={{.Descriptors}}{{- end }} --
 	{{- .Name -}}_out={{if .Plugins}}plugins={{- range $index, $plugin := .Plugins -}}
 		{{- if $index}}+{{end}}
 		{{- $plugin}}
@@ -30,13 +31,14 @@ var (
 
 // protocParams defines inputs to a protoc command string.
 type protocCmd struct {
-	Name       string // backend name
-	Includes   []string
-	Plugins    []string
-	ImportPath string
-	PackageMap map[string]string
-	Files      []string
-	OutputDir  string
+	Name        string // backend name
+	Includes    []string
+	Plugins     []string
+	Descriptors string
+	ImportPath  string
+	PackageMap  map[string]string
+	Files       []string
+	OutputDir   string
 }
 
 func (p *protocCmd) mkcmd() (string, error) {
