@@ -65,6 +65,7 @@ func (d *descriptorSet) marshalTo(w io.Writer) error {
 		"google.protobuf.FileDescriptorSet",
 
 		// TODO(stevvooe): Come up with better way to resolve this path.
+		"-I/usr/local/include",
 		"/usr/local/include/google/protobuf/descriptor.proto",
 	}
 
