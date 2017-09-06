@@ -23,11 +23,25 @@ plugins = ["grpc"]
   # directory. These will be calculated with the vendor directory nearest the
   # target package.
   #
+  # This should be used only in cases where imports must be resolved from the
+  # vendor package and not a GOPATH package. Most users should employ the
+  # `packages` configuration and let protobuild resolve the existing package.
+  #
   # With the example below, we import the gogo protobufs from the vendor
   # directory.
   #
   # This is empty by default.
   # vendored = ["github.com/gogo/protobuf"]
+
+  # Packages will add imports that are relative to the vendor path or GOPATH.
+  # For example, if we import `gogoproto/gogo.proto`, we would add an import
+  # root of `$GOPATH/github.com/gogo/protobuf`, in addition to the vendored
+  # directory.
+  #
+  # If in doubt, use this over `vendored` configuration for your project.
+  #
+  # This is empty by default.
+  # packages = ["github.com/gogo/protobuf"]
 
   # Paths that will be added untouched to the end of the includes. We use
   # `/usr/local/include` to pickup the common install location of protobuf.

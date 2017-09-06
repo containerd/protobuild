@@ -84,6 +84,10 @@ func main() {
 		}
 
 		if vendor != "" {
+			// TODO(stevvooe): The use of the closest vendor directory is a
+			// little naive. We should probably resolve all possible vendor
+			// directories or at least match Go's behavior.
+
 			// we also special case the inclusion of gogoproto in the vendor dir.
 			// We could parameterize this better if we find it to be a common case.
 			var vendoredIncludesResolved []string
@@ -92,10 +96,22 @@ func main() {
 					filepath.Join(vendor, vendoredInclude))
 			}
 
+			// Also do this for pkg includes.
+			for _, pkgInclude := range c.Includes.Packages {
+				vendoredIncludesResolved = append(vendoredIncludesResolved,
+					filepath.Join(vendor, pkgInclude))
+			}
+
 			includes = append(includes, vendoredIncludesResolved...)
 			includes = append(includes, vendor)
 		} else if len(c.Includes.Vendored) > 0 {
 			log.Println("ignoring vendored includes: vendor directory not found")
+		}
+
+		// handle packages that we want to have as an include root from any of
+		// the gopaths.
+		for _, pkg := range c.Includes.Packages {
+			includes = append(includes, gopathJoin(gopath, pkg))
 		}
 
 		includes = append(includes, gopath)
@@ -242,16 +258,24 @@ func goPkgInfo(golistpath ...string) ([]protoGoPkgInfo, error) {
 	return pkgInfos, nil
 }
 
-// gopathSrc modifies GOPATH elements from env to include the src directory.
-func gopathSrc() (string, error) {
-	gopathAll := os.Getenv("GOPATH")
+func gopaths() []string {
+	gp := os.Getenv("GOPATH")
 
-	if gopathAll == "" {
-		return "", fmt.Errorf("must be run from a gopath")
+	if gp == "" {
+		return nil
 	}
 
+	return strings.Split(gp, string(filepath.ListSeparator))
+}
+
+// gopathSrc modifies GOPATH elements from env to include the src directory.
+func gopathSrc() (string, error) {
+	gps := gopaths()
+	if len(gps) == 0 {
+		return "", fmt.Errorf("must be run from a gopath")
+	}
 	var elements []string
-	for _, element := range strings.Split(gopathAll, string(filepath.ListSeparator)) {
+	for _, element := range gps {
 		elements = append(elements, filepath.Join(element, "src"))
 	}
 
@@ -260,13 +284,23 @@ func gopathSrc() (string, error) {
 
 // gopathCurrent provides the top-level gopath for the current generation.
 func gopathCurrent() (string, error) {
-	gopathAll := os.Getenv("GOPATH")
-
-	if gopathAll == "" {
+	gps := gopaths()
+	if len(gps) == 0 {
 		return "", fmt.Errorf("must be run from a gopath")
 	}
 
-	return strings.Split(gopathAll, string(filepath.ListSeparator))[0], nil
+	return gps[0], nil
+}
+
+// gopathJoin combines the element with each path item and then recombines the set.
+func gopathJoin(gopath, element string) string {
+	gps := strings.Split(gopath, string(filepath.ListSeparator))
+	var elements []string
+	for _, p := range gps {
+		elements = append(elements, filepath.Join(p, element))
+	}
+
+	return strings.Join(elements, string(filepath.ListSeparator))
 }
 
 var errVendorNotFound = fmt.Errorf("no vendor dir found")
