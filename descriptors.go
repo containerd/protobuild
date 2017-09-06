@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"strings"
 
 	"github.com/gogo/protobuf/proto"
 	"github.com/golang/protobuf/protoc-gen-go/descriptor"
@@ -74,6 +75,7 @@ func (d *descriptorSet) marshalTo(w io.Writer) error {
 	cmd.Stdout = w
 	cmd.Stderr = os.Stderr
 
+	os.Stdout.WriteString(strings.Join(args, " "))
 	return cmd.Run()
 }
 

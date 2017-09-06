@@ -17,6 +17,7 @@ type config struct {
 	Includes  struct {
 		Before   []string
 		Vendored []string
+		Packages []string
 		After    []string
 	}
 
@@ -35,6 +36,7 @@ func newDefaultConfig() config {
 		Includes: struct {
 			Before   []string
 			Vendored []string
+			Packages []string
 			After    []string
 		}{
 			Before: []string{"."},
