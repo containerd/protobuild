@@ -55,6 +55,18 @@ func main() {
 	// this only in the case where you give it ".".
 	outputDir := filepath.Join(gopathCurrent, "src")
 
+	// Index overrides by target import path
+	overrides := map[string]struct {
+		Prefixes  []string
+		Generator string
+		Plugins   *[]string
+	}{}
+	for _, override := range c.Overrides {
+		for _, prefix := range override.Prefixes {
+			overrides[prefix] = override
+		}
+	}
+
 	// Aggregate descriptors for each descriptor prefix.
 	descriptorSets := map[string]*descriptorSet{}
 	for _, stable := range c.Descriptors {
@@ -130,6 +142,17 @@ func main() {
 		importDirPath, err := filepath.Rel(outputDir, pkg.Dir)
 		if err != nil {
 			log.Fatalln(err)
+		}
+
+		if override, ok := overrides[importDirPath]; ok {
+			// selectively apply the overrides to the protoc structure.
+			if override.Generator != "" {
+				protoc.Name = override.Generator
+			}
+
+			if override.Plugins != nil {
+				protoc.Plugins = *override.Plugins
+			}
 		}
 
 		var (

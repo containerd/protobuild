@@ -58,6 +58,30 @@ plugins = ["grpc"]
   "google/protobuf/timestamp.proto"  = "github.com/gogo/protobuf/types"
   "google/protobuf/empty.proto"      = "github.com/gogo/protobuf/types"
 
+# Overrides allows one to specify configuration overrides for specific
+# packages. Currently, only overriding the generator and plugin set are
+# supported.
+#
+# This can be used to use a different plugin set for a given package.
+[[overrides]]
+
+# Prefix specifies the protobuf import path to which the configuration
+# overrides apply.
+#
+# This works the same as the descriptors selection prefix except that each path
+# that is overridden must be specified, rather than applying to the whole tree.
+#
+# For this example, if there were a package that needed this overrides applied,
+# you would need to specify that explicitly in the prefixes list. This allows
+# one to granularly select which packages have the overrides.
+prefixes = ["github.com/stevvooe/protobuild/examples/nogrpc"]
+
+# Generator allows one to override the generator for the given prefix.
+# generator = ""
+
+# Plugins will override the entire plugin set for the specified prefix.
+plugins = []
+
 # Descriptors allows you to aggregate generated protobuf descriptors under a
 # particular Go import path into a single, de-duplicated file. The result of
 # configuring this option for one or more paths will be a text format protobuf

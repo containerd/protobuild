@@ -104,3 +104,23 @@ file {
   }
   syntax: "proto3"
 }
+file {
+  name: "github.com/stevvooe/protobuild/examples/nogrpc/nogrpc.proto"
+  package: "protobuild.example.nogrpc"
+  dependency: "google/protobuf/timestamp.proto"
+  message_type {
+    name: "Thing"
+    field {
+      name: "timestamp"
+      number: 3
+      label: LABEL_OPTIONAL
+      type: TYPE_MESSAGE
+      type_name: ".google.protobuf.Timestamp"
+      json_name: "timestamp"
+    }
+  }
+  options {
+    go_package: "github.com/stevvooe/protobuild/examples/nogrpc/;nogrpc"
+  }
+  syntax: "proto3"
+}

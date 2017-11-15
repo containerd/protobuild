@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+// This package will be generated without the grpc plugin enabled,
+// demonstrating the overrides feature.
+
+package protobuild.example.nogrpc;
+
+import "google/protobuf/timestamp.proto";
+
+option go_package = "github.com/stevvooe/protobuild/examples/nogrpc/;nogrpc";
+
+message Thing {
+	google.protobuf.Timestamp timestamp = 3;
+}

@@ -23,6 +23,17 @@ type config struct {
 
 	Packages map[string]string
 
+	Overrides []struct {
+		Prefixes  []string
+		Generator string
+		Plugins   *[]string
+
+		// TODO(stevvooe): We could probably support overriding of includes and
+		// package maps, but they don't seem to be as useful. Likely,
+		// overriding the package map is more useful but includes happen
+		// project-wide.
+	}
+
 	Descriptors []struct {
 		Prefix      string
 		Target      string
