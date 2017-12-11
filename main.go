@@ -20,11 +20,13 @@ import (
 var (
 	configPath string
 	dryRun     bool
+	quiet      bool
 )
 
 func init() {
 	flag.StringVar(&configPath, "f", "Protobuild.toml", "override default config location")
 	flag.BoolVar(&dryRun, "dryrun", false, "prints commands without running")
+	flag.BoolVar(&quiet, "quiet", false, "suppress verbose output")
 }
 
 func main() {
@@ -173,13 +175,18 @@ func main() {
 			log.Fatalln(err)
 		}
 
-		fmt.Println(arg)
+		if !quiet {
+			fmt.Println(arg)
+		}
 
 		if dryRun {
 			continue
 		}
 
 		if err := protoc.run(); err != nil {
+			if quiet {
+				log.Println(arg)
+			}
 			if err, ok := err.(*exec.ExitError); ok {
 				if status, ok := err.Sys().(syscall.WaitStatus); ok {
 					os.Exit(status.ExitStatus()) // proxy protoc exit status
