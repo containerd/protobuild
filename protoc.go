@@ -2,7 +2,6 @@ package main
 
 import (
 	"bytes"
-	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -53,7 +52,7 @@ func (p *protocCmd) mkcmd() (string, error) {
 func (p *protocCmd) run() error {
 	arg, err := p.mkcmd()
 	if err != nil {
-		log.Fatalln(err)
+		return err
 	}
 
 	// pass to sh -c so we don't need to re-split here.
