@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"log"
@@ -75,7 +76,7 @@ func (d *descriptorSet) marshalTo(w io.Writer) error {
 	cmd.Stdout = w
 	cmd.Stderr = os.Stderr
 
-	os.Stdout.WriteString(strings.Join(args, " "))
+	fmt.Println(strings.Join(args, " "))
 	return cmd.Run()
 }
 
