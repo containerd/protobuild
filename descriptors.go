@@ -18,9 +18,10 @@ type descriptorSet struct {
 	merged      descriptor.FileDescriptorSet
 	seen        map[string]struct{}
 	ignoreFiles map[string]struct{}
+	descProto   string
 }
 
-func newDescriptorSet(ignoreFiles ...string) *descriptorSet {
+func newDescriptorSet(ignoreFiles []string, d string) *descriptorSet {
 	ifm := make(map[string]struct{}, len(ignoreFiles))
 	for _, ignore := range ignoreFiles {
 		ifm[ignore] = struct{}{}
@@ -28,6 +29,7 @@ func newDescriptorSet(ignoreFiles ...string) *descriptorSet {
 	return &descriptorSet{
 		seen:        make(map[string]struct{}),
 		ignoreFiles: ifm,
+		descProto:   d,
 	}
 }
 
@@ -54,7 +56,7 @@ func (d *descriptorSet) add(descs ...*descriptor.FileDescriptorProto) {
 //
 // This is equivalent to the following command:
 //
-// cat merged.pb | protoc --decode google.protobuf.FileDescriptorSet /usr/local/include/google/protobuf/descriptor.proto
+// cat merged.pb | protoc --decode google.protobuf.FileDescriptorSet /path/to/google/protobuf/descriptor.proto
 func (d *descriptorSet) marshalTo(w io.Writer) error {
 	p, err := proto.Marshal(&d.merged)
 	if err != nil {
@@ -65,10 +67,7 @@ func (d *descriptorSet) marshalTo(w io.Writer) error {
 		"protoc",
 		"--decode",
 		"google.protobuf.FileDescriptorSet",
-
-		// TODO(stevvooe): Come up with better way to resolve this path.
-		"-I/usr/local/include",
-		"/usr/local/include/google/protobuf/descriptor.proto",
+		d.descProto,
 	}
 
 	cmd := exec.Command(args[0], args[1:]...)
