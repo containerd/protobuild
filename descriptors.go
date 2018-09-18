@@ -76,7 +76,9 @@ func (d *descriptorSet) marshalTo(w io.Writer) error {
 	cmd.Stdout = w
 	cmd.Stderr = os.Stderr
 
-	fmt.Println(strings.Join(args, " "))
+	if !quiet {
+		fmt.Println(strings.Join(args, " "))
+	}
 	return cmd.Run()
 }
 
