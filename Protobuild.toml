@@ -44,9 +44,9 @@ plugins = ["grpc"]
   # packages = ["github.com/gogo/protobuf"]
 
   # Paths that will be added untouched to the end of the includes. We use
-  # `/usr/local/include` to pickup the common install location of protobuf.
+  # a few paths to pickup the common install locations for protobuf.
   # This is the default.
-  # after = ["usr/local/include"]
+  # after = ["usr/local/include", "/usr/include"]
 
 # This section let's us map protobuf imports to Go packages. These will become
 # `-M` directives in the call to the go protobuf generator.

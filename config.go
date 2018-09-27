@@ -51,7 +51,7 @@ func newDefaultConfig() config {
 			After    []string
 		}{
 			Before: []string{"."},
-			After:  []string{"/usr/local/include"},
+			After:  []string{"/usr/local/include", "/usr/include"},
 		},
 	}
 }
