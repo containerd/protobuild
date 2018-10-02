@@ -19,9 +19,10 @@ type descriptorSet struct {
 	seen        map[string]struct{}
 	ignoreFiles map[string]struct{}
 	descProto   string
+	protoPath   string
 }
 
-func newDescriptorSet(ignoreFiles []string, d string) *descriptorSet {
+func newDescriptorSet(ignoreFiles []string, d, p string) *descriptorSet {
 	ifm := make(map[string]struct{}, len(ignoreFiles))
 	for _, ignore := range ignoreFiles {
 		ifm[ignore] = struct{}{}
@@ -30,6 +31,7 @@ func newDescriptorSet(ignoreFiles []string, d string) *descriptorSet {
 		seen:        make(map[string]struct{}),
 		ignoreFiles: ifm,
 		descProto:   d,
+		protoPath:   p,
 	}
 }
 
@@ -67,6 +69,8 @@ func (d *descriptorSet) marshalTo(w io.Writer) error {
 		"protoc",
 		"--decode",
 		"google.protobuf.FileDescriptorSet",
+		"--proto_path",
+		d.protoPath,
 		d.descProto,
 	}
 
