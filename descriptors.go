@@ -19,9 +19,10 @@ type descriptorSet struct {
 	seen        map[string]struct{}
 	ignoreFiles map[string]struct{}
 	descProto   string
+	includeDir  string
 }
 
-func newDescriptorSet(ignoreFiles []string, d string) *descriptorSet {
+func newDescriptorSet(ignoreFiles []string, d string, i string) *descriptorSet {
 	ifm := make(map[string]struct{}, len(ignoreFiles))
 	for _, ignore := range ignoreFiles {
 		ifm[ignore] = struct{}{}
@@ -30,6 +31,7 @@ func newDescriptorSet(ignoreFiles []string, d string) *descriptorSet {
 		seen:        make(map[string]struct{}),
 		ignoreFiles: ifm,
 		descProto:   d,
+		includeDir:  i,
 	}
 }
 
@@ -56,7 +58,7 @@ func (d *descriptorSet) add(descs ...*descriptor.FileDescriptorProto) {
 //
 // This is equivalent to the following command:
 //
-// cat merged.pb | protoc --decode google.protobuf.FileDescriptorSet /path/to/google/protobuf/descriptor.proto
+// cat merged.pb | protoc -I /path/to --decode google.protobuf.FileDescriptorSet /path/to/google/protobuf/descriptor.proto
 func (d *descriptorSet) marshalTo(w io.Writer) error {
 	p, err := proto.Marshal(&d.merged)
 	if err != nil {
@@ -65,6 +67,8 @@ func (d *descriptorSet) marshalTo(w io.Writer) error {
 
 	args := []string{
 		"protoc",
+		"-I",
+		d.includeDir,
 		"--decode",
 		"google.protobuf.FileDescriptorSet",
 		d.descProto,

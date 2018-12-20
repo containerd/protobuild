@@ -70,7 +70,7 @@ func main() {
 		}
 	}
 
-	descProto, err := descriptorProto(c.Includes.After)
+	descProto, includeDir, err := descriptorProto(c.Includes.After)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -78,7 +78,7 @@ func main() {
 	// Aggregate descriptors for each descriptor prefix.
 	descriptorSets := map[string]*descriptorSet{}
 	for _, stable := range c.Descriptors {
-		descriptorSets[stable.Prefix] = newDescriptorSet(stable.IgnoreFiles, descProto)
+		descriptorSets[stable.Prefix] = newDescriptorSet(stable.IgnoreFiles, descProto, includeDir)
 	}
 
 	shouldGenerateDescriptors := func(p string) bool {
@@ -342,17 +342,17 @@ func gopathJoin(gopath, element string) string {
 // descriptorProto returns the full path to google/protobuf/descriptor.proto
 // which might be different depending on whether it was installed. The argument
 // is the list of paths to check.
-func descriptorProto(paths []string) (string, error) {
+func descriptorProto(paths []string) (string, string, error) {
 	const descProto = "google/protobuf/descriptor.proto"
 
 	for _, dir := range paths {
 		file := path.Join(dir, descProto)
 		if _, err := os.Stat(file); err == nil {
-			return file, err
+			return file, dir, err
 		}
 	}
 
-	return "", fmt.Errorf("File %q not found (looked in: %v)", descProto, paths)
+	return "", "", fmt.Errorf("File %q not found (looked in: %v)", descProto, paths)
 }
 
 var errVendorNotFound = fmt.Errorf("no vendor dir found")
