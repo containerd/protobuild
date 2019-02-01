@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"errors"
 	"flag"
 	"fmt"
 	"io/ioutil"
@@ -294,19 +295,28 @@ func goPkgInfo(golistpath ...string) ([]protoGoPkgInfo, error) {
 	return pkgInfos, nil
 }
 
-func gopaths() []string {
-	gp := os.Getenv("GOPATH")
-
-	if gp == "" {
-		return nil
+func gopaths() ([]string, error) {
+	cmd := exec.Command("go", "env", "GOPATH")
+	out, err := cmd.Output()
+	if err != nil {
+		return nil, err
 	}
 
-	return strings.Split(gp, string(filepath.ListSeparator))
+	gp := strings.TrimSpace(string(out))
+
+	if gp == "" {
+		return nil, errors.New("go env GOPATH is empty")
+	}
+
+	return strings.Split(gp, string(filepath.ListSeparator)), nil
 }
 
 // gopathSrc modifies GOPATH elements from env to include the src directory.
 func gopathSrc() (string, error) {
-	gps := gopaths()
+	gps, err := gopaths()
+	if err != nil {
+		return "", err
+	}
 	if len(gps) == 0 {
 		return "", fmt.Errorf("must be run from a gopath")
 	}
@@ -320,7 +330,10 @@ func gopathSrc() (string, error) {
 
 // gopathCurrent provides the top-level gopath for the current generation.
 func gopathCurrent() (string, error) {
-	gps := gopaths()
+	gps, err := gopaths()
+	if err != nil {
+		return "", err
+	}
 	if len(gps) == 0 {
 		return "", fmt.Errorf("must be run from a gopath")
 	}
