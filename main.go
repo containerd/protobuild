@@ -71,7 +71,18 @@ func main() {
 		}
 	}
 
-	descProto, includeDir, err := descriptorProto(c.Includes.After)
+	// Create include paths used to find the descriptor proto. As a special case
+	// we search the vendor directory relative to the current working directory.
+	// This handles the case where a user has vendored their descriptor proto.
+	var descriptorIncludes []string
+	descriptorIncludes = append(descriptorIncludes, c.Includes.Before...)
+	for _, vendorPath := range c.Includes.Vendored {
+		descriptorIncludes = append(descriptorIncludes,
+			filepath.Join("vendor", vendorPath))
+	}
+	descriptorIncludes = append(descriptorIncludes, c.Includes.Packages...)
+	descriptorIncludes = append(descriptorIncludes, c.Includes.After...)
+	descProto, includeDir, err := descriptorProto(descriptorIncludes)
 	if err != nil {
 		log.Fatalln(err)
 	}
