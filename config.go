@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"path/filepath"
 
 	"github.com/pelletier/go-toml"
 )
@@ -72,8 +73,13 @@ func newDefaultConfig() config {
 	}
 }
 
-func readConfig(path string) (config, error) {
-	p, err := ioutil.ReadFile(path)
+func readConfig(path string) (config, string, error) {
+	configFile, err := filepath.Abs(path)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	p, err := ioutil.ReadFile(configFile)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -83,8 +89,8 @@ func readConfig(path string) (config, error) {
 	}
 
 	if c.Version != configVersion {
-		return config{}, fmt.Errorf("unknown file version %v; please upgrade to %v", c.Version, configVersion)
+		return config{}, "", fmt.Errorf("unknown file version %v; please upgrade to %v", c.Version, configVersion)
 	}
 
-	return c, nil
+	return c, filepath.Dir(configFile), nil
 }
