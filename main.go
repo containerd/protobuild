@@ -135,7 +135,10 @@ func main() {
 			}
 
 			includes = append(includes, vendoredIncludesResolved...)
-			includes = append(includes, vendor)
+			// Add the root vendor directory ONLY if the user has not specified anything above
+			if len(vendoredIncludesResolved) == 0 {
+				includes = append(includes, vendor)
+			}
 		} else if len(c.Includes.Vendored) > 0 {
 			log.Println("ignoring vendored includes: vendor directory not found")
 		}
