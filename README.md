@@ -1,6 +1,7 @@
 # protobuild
 
-[![Build Status](https://travis-ci.org/stevvooe/protobuild.svg?branch=master)](https://travis-ci.org/stevvooe/protobuild)
+[![Build Status](https://github.com/containerd/protobuild/workflows/CI/badge.svg)](https://github.com/containerd/protobuild/actions?query=workflow%3ACI)
+[![Go Report Card](https://goreportcard.com/badge/github.com/containerd/protobuild)](https://goreportcard.com/report/github.com/containerd/protobuild)
 
 Build protobufs in Go, easily.
 
@@ -59,11 +60,12 @@ protobufs. To get started with a project, you must do the following:
 
 TODO(stevvooe): Make this better.
 
-## Contributing
+## Project details
 
-Contributions are welcome.
+protobuild is a containerd sub-project, licensed under the [Apache 2.0 license](./LICENSE).
+As a containerd sub-project, you will find the:
+ * [Project governance](https://github.com/containerd/project/blob/master/GOVERNANCE.md),
+ * [Maintainers](https://github.com/containerd/project/blob/master/MAINTAINERS),
+ * and [Contributing guidelines](https://github.com/containerd/project/blob/master/CONTRIBUTING.md)
 
-Please ensure that commits are signed off.
-
-For more complex PRs or design changes, please submit an issue for discussion
-first.
+information in our [`containerd/project`](https://github.com/containerd/project) repository.
