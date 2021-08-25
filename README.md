@@ -29,7 +29,7 @@ To ensure easy use with builds, we'll try to support `go get`. Install with the
 following command:
 
 ```
-go get -u github.com/stevvooe/protobuild
+go get -u github.com/containerd/protobuild
 ```
 
 ## Usage
