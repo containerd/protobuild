@@ -26,8 +26,8 @@ import (
 	"os/exec"
 	"strings"
 
-	"github.com/gogo/protobuf/proto"
 	"github.com/golang/protobuf/protoc-gen-go/descriptor"
+	"google.golang.org/protobuf/proto"
 )
 
 type descriptorSet struct {
