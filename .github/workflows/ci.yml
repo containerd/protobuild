@@ -41,3 +41,20 @@ jobs:
       working-directory: src/github.com/containerd/protobuild
       run: |
         go build .
+
+    - name: Install protoc
+      run: |
+        curl -LO https://github.com/protocolbuffers/protobuf/releases/download/v3.17.3/protoc-3.17.3-linux-x86_64.zip
+        sudo unzip -x protoc-3.17.3-linux-x86_64.zip -d /usr/local
+        sudo chmod -R go+rX /usr/local
+        sudo chmod go+x /usr/local/bin/protoc
+
+    - name: Install protoc-gen-go
+      run: |
+        go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.27.1
+
+    - name: Run protobuild
+      working-directory: src/github.com/containerd/protobuild
+      run: |
+        export PATH=$(go env GOBIN):$PATH
+        go list ./... | grep -v vendor | xargs ./protobuild
