@@ -35,7 +35,7 @@ var (
 		{{- if $index}}+{{end}}
 		{{- $plugin}}
 	{{- end -}}
-	,{{- end -}}import_path={{.ImportPath}}
+	,{{- end -}}
 	{{- range $proto, $gopkg := .PackageMap -}},M
 		{{- $proto}}={{$gopkg -}}
 	{{- end -}}
