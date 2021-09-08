@@ -8,7 +8,7 @@ file {
     java_package: "com.google.protobuf"
     java_outer_classname: "EmptyProto"
     java_multiple_files: true
-    go_package: "github.com/golang/protobuf/ptypes/empty"
+    go_package: "google.golang.org/protobuf/types/known/emptypb"
     cc_enable_arenas: true
     objc_class_prefix: "GPB"
     csharp_namespace: "Google.Protobuf.WellKnownTypes"
@@ -39,7 +39,7 @@ file {
     java_package: "com.google.protobuf"
     java_outer_classname: "TimestampProto"
     java_multiple_files: true
-    go_package: "github.com/golang/protobuf/ptypes/timestamp"
+    go_package: "google.golang.org/protobuf/types/known/timestamppb"
     cc_enable_arenas: true
     objc_class_prefix: "GPB"
     csharp_namespace: "Google.Protobuf.WellKnownTypes"
