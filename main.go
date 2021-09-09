@@ -18,7 +18,6 @@ package main
 
 import (
 	"bytes"
-	"encoding/json"
 	"errors"
 	"flag"
 	"fmt"
@@ -51,7 +50,7 @@ func init() {
 func main() {
 	flag.Parse()
 
-	c, configRoot, err := readConfig(configPath)
+	c, err := readConfig(configPath)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -61,74 +60,21 @@ func main() {
 		log.Fatalln(err)
 	}
 
-	globalGopath, err := gopathSrc()
+	gopath, err := gopathSrc()
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	module, err := gomodule()
+	gopathCurrent, err := gopathCurrent()
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	var (
-		gopath    string
-		outputDir string
-	)
+	// For some reason, the golang protobuf generator makes the god awful
+	// decision to output the files relative to the gopath root. It doesn't do
+	// this only in the case where you give it ".".
+	outputDir := filepath.Join(gopathCurrent, "src")
 
-	// If module is provided, create a temporary gopath, place the module
-	// into that path and rewrite the paths
-	if module != "" {
-		tmpgopath, err := ioutil.TempDir("", "protobuild-")
-		if err != nil {
-			log.Fatalln(err)
-		}
-		defer os.RemoveAll(tmpgopath)
-
-		gopath = gopathJoin(tmpgopath, "src")
-		outputDir = gopath
-
-		sympath := gopathJoin(gopath, module)
-		if err := os.MkdirAll(filepath.Dir(sympath), 0755); err != nil {
-			log.Fatalln(err)
-		}
-
-		if err := os.Symlink(configRoot, sympath); err != nil {
-			log.Fatalln(err)
-		}
-
-		// Update pkgInfos to new gopath
-		for i, pkg := range pkgInfos {
-			relPath, err := filepath.Rel(configRoot, pkg.Dir)
-			if err != nil {
-				log.Fatalln(err)
-			}
-			pkgInfos[i].Dir = filepath.Join(outputDir, module, relPath)
-
-			for j, f := range pkg.ProtoFiles {
-				relPath, err = filepath.Rel(configRoot, f)
-				if err != nil {
-					log.Fatalln(err)
-				}
-				pkg.ProtoFiles[j] = filepath.Join(outputDir, module, relPath)
-			}
-			pkgInfos[i].ProtoFiles = pkg.ProtoFiles
-
-		}
-	} else {
-		gopath = globalGopath
-
-		currentGopath, err := gopathCurrent()
-		if err != nil {
-			log.Fatalln(err)
-		}
-
-		// For some reason, the golang protobuf generator makes the god awful
-		// decision to output the files relative to the gopath root. It doesn't do
-		// this only in the case where you give it ".".
-		outputDir = filepath.Join(currentGopath, "src")
-
-	}
 	// Index overrides by target import path
 	overrides := map[string]struct {
 		Prefixes  []string
@@ -213,7 +159,7 @@ func main() {
 		// handle packages that we want to have as an include root from any of
 		// the gopaths.
 		for _, pkg := range c.Includes.Packages {
-			includes = append(includes, gopathJoin(globalGopath, pkg))
+			includes = append(includes, gopathJoin(gopath, pkg))
 		}
 
 		includes = append(includes, gopath)
@@ -431,26 +377,6 @@ func gopathJoin(gopath, element string) string {
 	}
 
 	return strings.Join(elements, string(filepath.ListSeparator))
-}
-
-// gomodule returns the name of the current module if called from a go module
-func gomodule() (string, error) {
-	cmd := exec.Command("go", "list", "-m", "-json")
-	out, err := cmd.Output()
-	if err != nil {
-		return "", err
-	}
-	var listOutput struct {
-		Path  string
-		GoMod string
-	}
-	if err := json.Unmarshal(out, &listOutput); err != nil {
-		return "", err
-	}
-	if listOutput.GoMod != "" {
-		return listOutput.Path, nil
-	}
-	return "", nil
 }
 
 // descriptorProto returns the full path to google/protobuf/descriptor.proto
