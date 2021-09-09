@@ -3,7 +3,7 @@ version = "unstable"
 # Generator defines which generator to go. The default is "go". This will be
 # formatted into the --xxx_out flag provided to protoc. Below, we have an
 # example that selects the ctrd vanity binary.
-# generator = "gogoctrd"
+# generator = "go"
 
 # Plugins allows one to specify one or more plugins for use in generation.
 #
@@ -27,21 +27,18 @@ plugins = ["grpc"]
   # vendor package and not a GOPATH package. Most users should employ the
   # `packages` configuration and let protobuild resolve the existing package.
   #
-  # With the example below, we import the gogo protobufs from the vendor
+  # With the example below, we import github.com/golang/protobuf from the vendor
   # directory.
   #
   # This is empty by default.
-  # vendored = ["github.com/gogo/protobuf"]
+  # vendored = ["github.com/golang/protobuf"]
 
   # Packages will add imports that are relative to the vendor path or GOPATH.
-  # For example, if we import `gogoproto/gogo.proto`, we would add an import
-  # root of `$GOPATH/github.com/gogo/protobuf`, in addition to the vendored
-  # directory.
   #
   # If in doubt, use this over `vendored` configuration for your project.
   #
   # This is empty by default.
-  # packages = ["github.com/gogo/protobuf"]
+  # packages = ["github.com/golang/protobuf"]
 
   # Paths that will be added untouched to the end of the includes. We use
   # a few paths to pickup the common install locations for protobuf.
@@ -53,10 +50,7 @@ plugins = ["grpc"]
 #
 # We have a few examples to map packages from the examples.
 [packages]
-  "gogoproto/gogo.proto"             = "github.com/gogo/protobuf/gogoproto"
-  "google/protobuf/descriptor.proto" = "github.com/gogo/protobuf/protoc-gen-gogo/descriptor"
-  "google/protobuf/timestamp.proto"  = "github.com/gogo/protobuf/types"
-  "google/protobuf/empty.proto"      = "github.com/gogo/protobuf/types"
+  "google/protobuf/empty.proto"      = "github.com/containerd/protobuild/internal"
 
 # Overrides allows one to specify configuration overrides for specific
 # packages. Currently, only overriding the generator and plugin set are

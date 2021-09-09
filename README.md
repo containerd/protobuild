@@ -9,9 +9,6 @@ Build protobufs in Go, easily.
 `protoc` commands, configured with the plugins, packages and details of your
 choice.
 
-It should work with both the default `golang/protobuf` and the `gogo`
-toolchain. If it doesn't, we should figure out how to get there.
-
 The main benefit is that it makes it much easier to consume external types from
 vendored projects. By integrating the protoc include paths with Go's vendoring
 and GOPATH, builds are much easier to keep consistent across a project.

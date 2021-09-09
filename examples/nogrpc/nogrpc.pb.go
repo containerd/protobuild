@@ -5,8 +5,8 @@ package nogrpc
 
 import (
 	fmt "fmt"
-	types "github.com/gogo/protobuf/types"
 	proto "github.com/golang/protobuf/proto"
+	timestamp "github.com/golang/protobuf/ptypes/timestamp"
 	math "math"
 )
 
@@ -22,10 +22,10 @@ var _ = math.Inf
 const _ = proto.ProtoPackageIsVersion3 // please upgrade the proto package
 
 type Thing struct {
-	Timestamp            *types.Timestamp `protobuf:"bytes,3,opt,name=timestamp,proto3" json:"timestamp,omitempty"`
-	XXX_NoUnkeyedLiteral struct{}         `json:"-"`
-	XXX_unrecognized     []byte           `json:"-"`
-	XXX_sizecache        int32            `json:"-"`
+	Timestamp            *timestamp.Timestamp `protobuf:"bytes,3,opt,name=timestamp,proto3" json:"timestamp,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}             `json:"-"`
+	XXX_unrecognized     []byte               `json:"-"`
+	XXX_sizecache        int32                `json:"-"`
 }
 
 func (m *Thing) Reset()         { *m = Thing{} }
@@ -53,7 +53,7 @@ func (m *Thing) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_Thing proto.InternalMessageInfo
 
-func (m *Thing) GetTimestamp() *types.Timestamp {
+func (m *Thing) GetTimestamp() *timestamp.Timestamp {
 	if m != nil {
 		return m.Timestamp
 	}
