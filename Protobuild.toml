@@ -74,7 +74,7 @@ plugins = ["grpc"]
 # For this example, if there were a package that needed this overrides applied,
 # you would need to specify that explicitly in the prefixes list. This allows
 # one to granularly select which packages have the overrides.
-prefixes = ["github.com/stevvooe/protobuild/examples/nogrpc"]
+prefixes = ["github.com/containerd/protobuild/examples/nogrpc"]
 
 # Generator allows one to override the generator for the given prefix.
 # generator = ""
@@ -108,13 +108,13 @@ plugins = []
 # to stabilize.
 #
 # For example, if the files are imported as
-# github.com/stevvooe/protobuild/examples/foo/foo.proto, and you want to
+# github.com/containerd/protobuild/examples/foo/foo.proto, and you want to
 # stabilize everything in package "foo", it should be
-# "github.com/stevvooe/protobuild/example/foo".
+# "github.com/containerd/protobuild/example/foo".
 #
 # The example below stablizes the protobufs under the examples directory. The
 # generated descriptor file will include both the "foo" and "bar" subpackages.
-prefix = "github.com/stevvooe/protobuild/examples"
+prefix = "github.com/containerd/protobuild/examples"
 
 # Target defines the output location of the merged descriptor file.
 target = "examples/next.pb.txt"
@@ -141,4 +141,4 @@ target = "examples/next.pb.txt"
 # Uncomment these lines to try it out!
 # [[descriptors]]
 # target = "examples/foo/descriptors.pb.txt"
-# prefix = "github.com/stevvooe/protobuild/examples/foo"
+# prefix = "github.com/containerd/protobuild/examples/foo"

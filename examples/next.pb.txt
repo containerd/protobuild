@@ -47,7 +47,7 @@ file {
   syntax: "proto3"
 }
 file {
-  name: "github.com/stevvooe/protobuild/examples/bar/bar.proto"
+  name: "github.com/containerd/protobuild/examples/bar/bar.proto"
   package: "protobuild.example.bar"
   dependency: "google/protobuf/empty.proto"
   dependency: "google/protobuf/timestamp.proto"
@@ -71,12 +71,12 @@ file {
     }
   }
   options {
-    go_package: "github.com/stevvooe/protobuild/examples/bar/;bar"
+    go_package: "github.com/containerd/protobuild/examples/bar/;bar"
   }
   syntax: "proto3"
 }
 file {
-  name: "github.com/stevvooe/protobuild/examples/foo/foo.proto"
+  name: "github.com/containerd/protobuild/examples/foo/foo.proto"
   package: "protobuild.example.foo"
   dependency: "google/protobuf/empty.proto"
   dependency: "google/protobuf/timestamp.proto"
@@ -100,12 +100,12 @@ file {
     }
   }
   options {
-    go_package: "github.com/stevvooe/protobuild/examples/foo/;foo"
+    go_package: "github.com/containerd/protobuild/examples/foo/;foo"
   }
   syntax: "proto3"
 }
 file {
-  name: "github.com/stevvooe/protobuild/examples/nogrpc/nogrpc.proto"
+  name: "github.com/containerd/protobuild/examples/nogrpc/nogrpc.proto"
   package: "protobuild.example.nogrpc"
   dependency: "google/protobuf/timestamp.proto"
   message_type {
@@ -120,7 +120,7 @@ file {
     }
   }
   options {
-    go_package: "github.com/stevvooe/protobuild/examples/nogrpc/;nogrpc"
+    go_package: "github.com/containerd/protobuild/examples/nogrpc/;nogrpc"
   }
   syntax: "proto3"
 }

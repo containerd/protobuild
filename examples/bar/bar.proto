@@ -5,7 +5,7 @@ package protobuild.example.bar;
 import "google/protobuf/empty.proto";
 import "google/protobuf/timestamp.proto";
 
-option go_package = "github.com/stevvooe/protobuild/examples/bar/;bar";
+option go_package = "github.com/containerd/protobuild/examples/bar/;bar";
 
 service Bar {
 	rpc Do(DoRequest) returns (google.protobuf.Empty);

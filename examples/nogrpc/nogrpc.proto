@@ -7,7 +7,7 @@ package protobuild.example.nogrpc;
 
 import "google/protobuf/timestamp.proto";
 
-option go_package = "github.com/stevvooe/protobuild/examples/nogrpc/;nogrpc";
+option go_package = "github.com/containerd/protobuild/examples/nogrpc/;nogrpc";
 
 message Thing {
 	google.protobuf.Timestamp timestamp = 3;
