@@ -1,4 +1,4 @@
-module github.com/stevvooe/protobuild
+module github.com/containerd/protobuild
 
 go 1.13
 
