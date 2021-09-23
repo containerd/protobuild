@@ -6,8 +6,9 @@ package foo
 import (
 	context "context"
 	fmt "fmt"
-	types "github.com/gogo/protobuf/types"
+	internal "github.com/containerd/protobuild/internal"
 	proto "github.com/golang/protobuf/proto"
+	timestamp "github.com/golang/protobuf/ptypes/timestamp"
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
@@ -26,10 +27,10 @@ var _ = math.Inf
 const _ = proto.ProtoPackageIsVersion3 // please upgrade the proto package
 
 type DoRequest struct {
-	Timestamp            *types.Timestamp `protobuf:"bytes,3,opt,name=timestamp,proto3" json:"timestamp,omitempty"`
-	XXX_NoUnkeyedLiteral struct{}         `json:"-"`
-	XXX_unrecognized     []byte           `json:"-"`
-	XXX_sizecache        int32            `json:"-"`
+	Timestamp            *timestamp.Timestamp `protobuf:"bytes,3,opt,name=timestamp,proto3" json:"timestamp,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}             `json:"-"`
+	XXX_unrecognized     []byte               `json:"-"`
+	XXX_sizecache        int32                `json:"-"`
 }
 
 func (m *DoRequest) Reset()         { *m = DoRequest{} }
@@ -57,7 +58,7 @@ func (m *DoRequest) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_DoRequest proto.InternalMessageInfo
 
-func (m *DoRequest) GetTimestamp() *types.Timestamp {
+func (m *DoRequest) GetTimestamp() *timestamp.Timestamp {
 	if m != nil {
 		return m.Timestamp
 	}
@@ -101,7 +102,7 @@ const _ = grpc.SupportPackageIsVersion6
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type FooClient interface {
-	Do(ctx context.Context, in *DoRequest, opts ...grpc.CallOption) (*types.Empty, error)
+	Do(ctx context.Context, in *DoRequest, opts ...grpc.CallOption) (*internal.Empty, error)
 }
 
 type fooClient struct {
@@ -112,8 +113,8 @@ func NewFooClient(cc grpc.ClientConnInterface) FooClient {
 	return &fooClient{cc}
 }
 
-func (c *fooClient) Do(ctx context.Context, in *DoRequest, opts ...grpc.CallOption) (*types.Empty, error) {
-	out := new(types.Empty)
+func (c *fooClient) Do(ctx context.Context, in *DoRequest, opts ...grpc.CallOption) (*internal.Empty, error) {
+	out := new(internal.Empty)
 	err := c.cc.Invoke(ctx, "/protobuild.example.foo.Foo/Do", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -123,14 +124,14 @@ func (c *fooClient) Do(ctx context.Context, in *DoRequest, opts ...grpc.CallOpti
 
 // FooServer is the server API for Foo service.
 type FooServer interface {
-	Do(context.Context, *DoRequest) (*types.Empty, error)
+	Do(context.Context, *DoRequest) (*internal.Empty, error)
 }
 
 // UnimplementedFooServer can be embedded to have forward compatible implementations.
 type UnimplementedFooServer struct {
 }
 
-func (*UnimplementedFooServer) Do(ctx context.Context, req *DoRequest) (*types.Empty, error) {
+func (*UnimplementedFooServer) Do(ctx context.Context, req *DoRequest) (*internal.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Do not implemented")
 }
 
