@@ -30,12 +30,16 @@ var (
 		{{if $index}}` + string(filepath.ListSeparator) + `{{end -}}
 			{{.}}
 	{{- end -}}
-	{{- if .Descriptors}} --include_imports --descriptor_set_out={{.Descriptors}}{{- end }} --
-	{{- .Name -}}_out={{if .Plugins}}plugins={{- range $index, $plugin := .Plugins -}}
-		{{- if $index}}+{{end}}
-		{{- $plugin}}
+	{{- if .Descriptors}} --include_imports --descriptor_set_out={{.Descriptors}}{{- end -}}
+
+	{{- range $index, $name := .Names }} --{{- $name -}}_out=
+		{{- if $.Plugins}}plugins={{- range $index, $plugin := $.Plugins -}}
+			{{- if $index}}+{{end}}
+			{{- $plugin}}
+		{{- end -}},{{- end -}}
+		import_path={{$.ImportPath}}
 	{{- end -}}
-	,{{- end -}}import_path={{.ImportPath}}
+
 	{{- range $proto, $gopkg := .PackageMap -}},M
 		{{- $proto}}={{$gopkg -}}
 	{{- end -}}
@@ -46,7 +50,7 @@ var (
 
 // protocParams defines inputs to a protoc command string.
 type protocCmd struct {
-	Name        string // backend name
+	Names       []string
 	Includes    []string
 	Plugins     []string
 	Descriptors string
