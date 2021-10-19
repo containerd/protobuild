@@ -77,9 +77,10 @@ func main() {
 
 	// Index overrides by target import path
 	overrides := map[string]struct {
-		Prefixes  []string
-		Generator string
-		Plugins   *[]string
+		Prefixes   []string
+		Generator  string
+		Generators []string
+		Plugins    *[]string
 	}{}
 	for _, override := range c.Overrides {
 		for _, prefix := range override.Prefixes {
@@ -166,7 +167,7 @@ func main() {
 		includes = append(includes, c.Includes.After...)
 
 		protoc := protocCmd{
-			Name:       c.Generator,
+			Names:      c.Generators,
 			ImportPath: pkg.GoImportPath,
 			PackageMap: c.Packages,
 			Plugins:    c.Plugins,
@@ -182,8 +183,8 @@ func main() {
 
 		if override, ok := overrides[importDirPath]; ok {
 			// selectively apply the overrides to the protoc structure.
-			if override.Generator != "" {
-				protoc.Name = override.Generator
+			if len(override.Generators) > 0 {
+				protoc.Names = override.Generators
 			}
 
 			if override.Plugins != nil {

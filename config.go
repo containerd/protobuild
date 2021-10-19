@@ -27,10 +27,19 @@ import (
 const configVersion = "unstable"
 
 type config struct {
-	Version   string
+	Version    string
+	Generators []string
+
+	// Generator is a code generator which is used from protoc.
+	// Deprecated: Use Generators instead.
 	Generator string
-	Plugins   []string
-	Includes  struct {
+
+	// Plugins will be deprecated. It has to be per-Generator setting,
+	// but neither protoc-gen-go nor protoc-gen-go-grpc support plugins.
+	// So the refactoring is not worth to do.
+	Plugins []string
+
+	Includes struct {
 		Before   []string
 		Vendored []string
 		Packages []string
@@ -40,9 +49,12 @@ type config struct {
 	Packages map[string]string
 
 	Overrides []struct {
-		Prefixes  []string
-		Generator string
-		Plugins   *[]string
+		Prefixes []string
+		// Generator is a code generator which is used from protoc.
+		// Deprecated: Use Generators instead.
+		Generator  string
+		Generators []string
+		Plugins    *[]string
 
 		// TODO(stevvooe): We could probably support overriding of includes and
 		// package maps, but they don't seem to be as useful. Likely,
@@ -59,7 +71,6 @@ type config struct {
 
 func newDefaultConfig() config {
 	return config{
-		Generator: "go",
 		Includes: struct {
 			Before   []string
 			Vendored []string
@@ -77,6 +88,10 @@ func readConfig(path string) (config, error) {
 	if err != nil {
 		log.Fatalln(err)
 	}
+	return readConfigFrom(p)
+}
+
+func readConfigFrom(p []byte) (config, error) {
 	c := newDefaultConfig()
 	if err := toml.Unmarshal(p, &c); err != nil {
 		log.Fatalln(err)
@@ -84,6 +99,34 @@ func readConfig(path string) (config, error) {
 
 	if c.Version != configVersion {
 		return config{}, fmt.Errorf("unknown file version %v; please upgrade to %v", c.Version, configVersion)
+	}
+
+	if c.Generator != "" {
+		if len(c.Generators) > 0 {
+			return config{}, fmt.Errorf(
+				`specify either "generators = %v" or "generator = %v", not both`,
+				c.Generators, c.Generator,
+			)
+		}
+		c.Generators = []string{c.Generator}
+		c.Generator = ""
+	}
+
+	for i, o := range c.Overrides {
+		if o.Generator != "" {
+			if len(o.Generators) > 0 {
+				return config{}, fmt.Errorf(
+					`specify either "overrides[%d].generators" or "overrides[%d].generator", not both`,
+					i, i,
+				)
+			}
+			c.Overrides[i].Generators = []string{o.Generator}
+			c.Overrides[i].Generator = ""
+		}
+	}
+
+	if len(c.Generators) == 0 {
+		c.Generators = []string{"go"}
 	}
 
 	return c, nil
