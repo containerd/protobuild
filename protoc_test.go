@@ -20,37 +20,55 @@ import "testing"
 
 func TestMkcmd(t *testing.T) {
 	testcases := []struct {
-		name     string
-		cmd      protocCmd
-		expected string
+		name       string
+		cmd        protocCmd
+		expectedV1 string
+		expectedV2 string
 	}{
 		{
-			name:     "basic",
-			cmd:      protocCmd{Names: []string{"go"}},
-			expected: "protoc -I --go_out=import_path=:",
+			name:       "basic",
+			cmd:        protocCmd{Names: []string{"go"}},
+			expectedV1: "protoc -I --go_out=import_path=:",
+			expectedV2: "protoc -I --go_out=",
 		},
 		{
-			name:     "plugin",
-			cmd:      protocCmd{Names: []string{"go"}, Plugins: []string{"grpc"}},
-			expected: "protoc -I --go_out=plugins=grpc,import_path=:",
+			name:       "plugin",
+			cmd:        protocCmd{Names: []string{"go"}, Plugins: []string{"grpc"}},
+			expectedV1: "protoc -I --go_out=plugins=grpc,import_path=:",
+			expectedV2: "protoc -I --go_out=",
 		},
 		{
-			name:     "use protoc-gen-go-grpc instead of plugins",
-			cmd:      protocCmd{Names: []string{"go", "go-grpc"}},
-			expected: "protoc -I --go_out=import_path= --go-grpc_out=import_path=:",
+			name:       "use protoc-gen-go-grpc instead of plugins",
+			cmd:        protocCmd{Names: []string{"go", "go-grpc"}},
+			expectedV1: "protoc -I --go_out=import_path=: --go-grpc_out=import_path=:",
+			expectedV2: "protoc -I --go_out= --go-grpc_out=",
 		},
 	}
 	for _, tc := range testcases {
-		t.Run(tc.name, func(t *testing.T) {
+		t.Run(tc.name+"V1", func(t *testing.T) {
 			cmd := &tc.cmd
+			cmd.Version = 1
 
 			s, err := cmd.mkcmd()
 			if err != nil {
 				t.Fatalf("err must be nil but %+v", err)
 			}
 
-			if s != tc.expected {
-				t.Fatalf(`s must be %q, but %q`, tc.expected, s)
+			if s != tc.expectedV1 {
+				t.Fatalf(`s must be %q, but %q`, tc.expectedV1, s)
+			}
+		})
+		t.Run(tc.name+"V2", func(t *testing.T) {
+			cmd := &tc.cmd
+			cmd.Version = 2
+
+			s, err := cmd.mkcmd()
+			if err != nil {
+				t.Fatalf("err must be nil but %+v", err)
+			}
+
+			if s != tc.expectedV2 {
+				t.Fatalf(`s must be %q, but %q`, tc.expectedV2, s)
 			}
 		})
 	}

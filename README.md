@@ -55,7 +55,18 @@ protobufs. To get started with a project, you must do the following:
     go list ./... | grep -v vendor | xargs protobuild
     ```
 
-TODO(stevvooe): Make this better.
+## Version Compatibility
+
+Originally protoc-gen-go was supporting gRPC through its plugins mechanism.
+[However gRPC support is later extracted as protoc-gen-go-gprc binary](https://github.com/protocolbuffers/protobuf-go/releases/tag/v1.20.0#user-content-v1.20-grpc-support).
+
+To use protoc-gen-go and protoc-gen-go-grpc. Please specify `version = "2"` and
+both code generators instead of `plugins` like below.
+
+```
+version = "2"
+generators = ["go", "go-grpc"]
+```
 
 ## Project details
 
