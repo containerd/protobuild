@@ -1,0 +1,77 @@
+file {
+  name: "google/protobuf/empty.proto"
+  package: "google.protobuf"
+  message_type {
+    name: "Empty"
+  }
+  options {
+    java_package: "com.google.protobuf"
+    java_outer_classname: "EmptyProto"
+    java_multiple_files: true
+    go_package: "google.golang.org/protobuf/types/known/emptypb"
+    cc_enable_arenas: true
+    objc_class_prefix: "GPB"
+    csharp_namespace: "Google.Protobuf.WellKnownTypes"
+  }
+  syntax: "proto3"
+}
+file {
+  name: "google/protobuf/timestamp.proto"
+  package: "google.protobuf"
+  message_type {
+    name: "Timestamp"
+    field {
+      name: "seconds"
+      number: 1
+      label: LABEL_OPTIONAL
+      type: TYPE_INT64
+      json_name: "seconds"
+    }
+    field {
+      name: "nanos"
+      number: 2
+      label: LABEL_OPTIONAL
+      type: TYPE_INT32
+      json_name: "nanos"
+    }
+  }
+  options {
+    java_package: "com.google.protobuf"
+    java_outer_classname: "TimestampProto"
+    java_multiple_files: true
+    go_package: "google.golang.org/protobuf/types/known/timestamppb"
+    cc_enable_arenas: true
+    objc_class_prefix: "GPB"
+    csharp_namespace: "Google.Protobuf.WellKnownTypes"
+  }
+  syntax: "proto3"
+}
+file {
+  name: "github.com/containerd/protobuild/examples/v2/foo.proto"
+  package: "protobuild.example.v2"
+  dependency: "google/protobuf/empty.proto"
+  dependency: "google/protobuf/timestamp.proto"
+  message_type {
+    name: "DoRequest"
+    field {
+      name: "timestamp"
+      number: 3
+      label: LABEL_OPTIONAL
+      type: TYPE_MESSAGE
+      type_name: ".google.protobuf.Timestamp"
+      json_name: "timestamp"
+    }
+  }
+  service {
+    name: "Foo"
+    method {
+      name: "Do"
+      input_type: ".protobuild.example.v2.DoRequest"
+      output_type: ".google.protobuf.Empty"
+    }
+  }
+  options {
+    go_package: "github.com/containerd/protobuild/examples/v2/;v2"
+  }
+  syntax: "proto3"
+}

@@ -27,6 +27,7 @@ import (
 	"os/exec"
 	"path"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"syscall"
 
@@ -47,10 +48,31 @@ func init() {
 	flag.BoolVar(&quiet, "quiet", false, "suppress verbose output")
 }
 
+func parseVersion(s string) (int, error) {
+	if s == "unstable" {
+		return 0, nil
+	}
+
+	v, err := strconv.Atoi(s)
+	if err != nil {
+		return 0, fmt.Errorf("unknown file version %q: %w", s, err)
+	}
+
+	if v < 1 || v > 2 {
+		return 0, fmt.Errorf(`unknown file version %q; valid versions are "unstable", "1" and "2"`, s)
+	}
+	return v, nil
+}
+
 func main() {
 	flag.Parse()
 
 	c, err := readConfig(configPath)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	version, err := parseVersion(c.Version)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -174,6 +196,7 @@ func main() {
 			Files:      pkg.ProtoFiles,
 			OutputDir:  outputDir,
 			Includes:   includes,
+			Version:    version,
 		}
 
 		importDirPath, err := filepath.Rel(outputDir, pkg.Dir)

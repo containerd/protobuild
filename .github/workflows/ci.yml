@@ -7,9 +7,40 @@ on:
     branches: [ main ]
 
 jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-20.04
+    timeout-minutes: 5
+    steps:
+    - name: Check out code
+      uses: actions/checkout@v2
+      with:
+        path: src/github.com/containerd/protobuild
+        fetch-depth: 25
 
-  build:
-    name: Protobuild CI
+    - name: Project checks
+      uses: containerd/project-checks@v1
+      with:
+        working-directory: src/github.com/containerd/protobuild
+
+    - name: Setup environment
+      shell: bash
+      run: |
+        echo "GOPATH=${{ github.workspace }}" >> $GITHUB_ENV
+        echo "${{ github.workspace }}/bin" >> $GITHUB_PATH
+
+    - name: Check out code
+      uses: actions/checkout@v2
+      with:
+        path: src/github.com/containerd/protobuild
+
+    - name: Test
+      working-directory: src/github.com/containerd/protobuild
+      run: |
+        go test
+
+  v1:
+    name: Run with protoc-gen-go v1.3.5
     runs-on: ubuntu-20.04
     timeout-minutes: 5
     steps:
@@ -30,12 +61,6 @@ jobs:
       uses: actions/checkout@v2
       with:
         path: src/github.com/containerd/protobuild
-        fetch-depth: 25
-
-    - name: Project checks
-      uses: containerd/project-checks@v1
-      with:
-        working-directory: src/github.com/containerd/protobuild
 
     - name: Build
       working-directory: src/github.com/containerd/protobuild
@@ -58,7 +83,55 @@ jobs:
     - name: Run protobuild to see all committed auto-generated files can be generated as is
       working-directory: src/github.com/containerd/protobuild
       run: |
-        find examples/ -name '*.pb.*' | xargs rm
+        rm examples/foo/*.pb.* examples/bar/*.pb.* examples/nogrpc/*.pb.*
         export PATH=$(go env GOBIN):$PATH
-        go list ./... | grep -v vendor | xargs ./protobuild
+        ./protobuild github.com/containerd/protobuild/examples/bar github.com/containerd/protobuild/examples/foo github.com/containerd/protobuild/examples/nogrpc
+        git diff --exit-code
+
+  v2:
+    name: Run with protoc-gen-go v1.26
+    runs-on: ubuntu-20.04
+    timeout-minutes: 5
+    steps:
+
+    - name: Set up Go
+      uses: actions/setup-go@v2
+      with:
+        go-version: 1.16.x
+      id: go
+
+    - name: Setup environment
+      shell: bash
+      run: |
+        echo "GOPATH=${{ github.workspace }}" >> $GITHUB_ENV
+        echo "${{ github.workspace }}/bin" >> $GITHUB_PATH
+
+    - name: Check out code
+      uses: actions/checkout@v2
+      with:
+        path: src/github.com/containerd/protobuild
+
+    - name: Build
+      working-directory: src/github.com/containerd/protobuild
+      run: |
+        go build .
+
+    - name: Install protoc
+      run: |
+        curl -LO https://github.com/protocolbuffers/protobuf/releases/download/v3.18.1/protoc-3.18.1-linux-x86_64.zip
+        sudo unzip -x protoc-3.18.1-linux-x86_64.zip -d /usr/local
+        sudo chmod -R go+rX /usr/local/include
+        sudo chmod go+x /usr/local/bin/protoc
+
+    - name: Install protoc-gen-go and protoc-gen-go-grpc
+      run: |
+        go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.26
+        go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.1
+
+    - name: Run protobuild to see all committed auto-generated files can be generated as is
+      working-directory: src/github.com/containerd/protobuild
+      run: |
+        rm examples/v2/*.pb.*
+        export PATH=$(go env GOBIN):$PATH
+        ./protobuild -f v2.toml github.com/containerd/protobuild/examples/v2
         git diff --exit-code

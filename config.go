@@ -24,8 +24,6 @@ import (
 	"github.com/pelletier/go-toml"
 )
 
-const configVersion = "unstable"
-
 type config struct {
 	Version    string
 	Generators []string
@@ -95,10 +93,6 @@ func readConfigFrom(p []byte) (config, error) {
 	c := newDefaultConfig()
 	if err := toml.Unmarshal(p, &c); err != nil {
 		log.Fatalln(err)
-	}
-
-	if c.Version != configVersion {
-		return config{}, fmt.Errorf("unknown file version %v; please upgrade to %v", c.Version, configVersion)
 	}
 
 	if c.Generator != "" {
