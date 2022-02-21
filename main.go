@@ -64,6 +64,14 @@ func parseVersion(s string) (int, error) {
 	return v, nil
 }
 
+func importPath(base, target string) (string, error) {
+	rel, err := filepath.Rel(base, target)
+	if err != nil {
+		return "", err
+	}
+	return filepath.ToSlash(rel), nil
+}
+
 func main() {
 	flag.Parse()
 
@@ -199,7 +207,7 @@ func main() {
 			Version:    version,
 		}
 
-		importDirPath, err := filepath.Rel(outputDir, pkg.Dir)
+		importDirPath, err := importPath(outputDir, pkg.Dir)
 		if err != nil {
 			log.Fatalln(err)
 		}
