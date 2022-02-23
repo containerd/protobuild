@@ -7,8 +7,8 @@ on:
     branches: [ main ]
 
 jobs:
-  test:
-    name: Test
+  check:
+    name: Project checks
     runs-on: ubuntu-20.04
     timeout-minutes: 5
     steps:
@@ -22,6 +22,21 @@ jobs:
       uses: containerd/project-checks@v1
       with:
         working-directory: src/github.com/containerd/protobuild
+
+  test:
+    name: Test
+    strategy:
+      matrix:
+        os: [ ubuntu-20.04, windows-2022 ]
+      fail-fast: false
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 5
+    steps:
+    - name: Check out code
+      uses: actions/checkout@v2
+      with:
+        path: src/github.com/containerd/protobuild
+        fetch-depth: 25
 
     - name: Setup environment
       shell: bash
