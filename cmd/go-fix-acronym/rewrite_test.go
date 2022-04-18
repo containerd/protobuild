@@ -21,20 +21,17 @@ import (
 	"go/format"
 	"go/parser"
 	"go/token"
+	"strings"
 	"testing"
 )
 
-func TestRewrite(t *testing.T) {
-	input := "//hello\npackage main\nfunc GetCpu(){}"
-	expected := "//hello\npackage main\n\nfunc GetCPU() {}\n"
-
+func testRewrite(t *testing.T, input, expected string, c config) {
 	fset := token.NewFileSet()
 	n, err := parser.ParseFile(fset, "", input, parser.ParseComments)
 	if err != nil {
 		t.Fatalf("failed to parse: %s", err)
 	}
 
-	c := config{acronyms: []string{"Cpu"}}
 	p, err := compilePattern(c)
 	if err != nil {
 		t.Fatalf("failed to compile: %s", err)
@@ -46,5 +43,48 @@ func TestRewrite(t *testing.T) {
 	format.Node(out, fset, n)
 	if out.String() != expected {
 		t.Fatalf("expected %q, but got %q", expected, out)
+	}
+}
+
+func TestRewriteSimple(t *testing.T) {
+	testcases := []struct {
+		name     string
+		input    string
+		expected string
+		c        config
+	}{
+		{
+			name:     "Simple",
+			c:        config{acronyms: []string{"Cpu"}},
+			input:    "//hello\npackage main\nfunc GetCpu(){}",
+			expected: "//hello\npackage main\n\nfunc GetCPU() {}",
+		},
+		{
+			name: "Multiple matches",
+			c:    config{acronyms: []string{"Cpu"}},
+			input: `package main
+
+			func GetCpuFromCpuList() {}`,
+			expected: `package main
+
+			func GetCPUFromCPUList() {}`,
+		},
+		{
+			name: "Submatches",
+			c:    config{acronyms: []string{"Runtime(Ns)"}},
+			input: `package main
+
+			func KernelTime_100Ns()            {}
+			func RuntimeNsAndNsAndSomeSuffix() {}`,
+			expected: `package main
+
+			func KernelTime_100Ns()            {}
+			func RuntimeNSAndNsAndSomeSuffix() {}`,
+		},
+	}
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			testRewrite(t, tc.input, strings.ReplaceAll(tc.expected, "\t", "")+"\n", tc.c)
+		})
 	}
 }
