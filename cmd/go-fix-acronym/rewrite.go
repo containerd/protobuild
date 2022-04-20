@@ -37,10 +37,31 @@ func rewriteNode(pattern *regexp.Regexp, node ast.Node) {
 			if !ok {
 				return true
 			}
-			name := pattern.ReplaceAllFunc([]byte(ident.Name), func(b []byte) []byte {
-				return []byte(strings.ToUpper(string(b)))
-			})
-			ident.Name = string(name)
+
+			matches := pattern.FindAllStringSubmatchIndex(ident.Name, -1)
+			if matches == nil {
+				return true
+			}
+
+			var (
+				result string
+				copied int
+			)
+			for _, match := range matches {
+				// If there are submatches, ignore the first element and only process the submatches.
+				if len(match) > 2 {
+					match = match[2:]
+				}
+
+				for i := 0; i < len(match); i += 2 {
+					result += ident.Name[copied:match[i]]
+					result += strings.ToUpper(ident.Name[match[i]:match[i+1]])
+					copied = match[i+1]
+				}
+			}
+			// Copy the rest.
+			result += ident.Name[copied:len(ident.Name)]
+			ident.Name = result
 			return false
 		},
 		nil,
