@@ -95,15 +95,24 @@ func main() {
 		log.Fatalln(err)
 	}
 
-	gopathCurrent, err := gopathCurrent()
-	if err != nil {
-		log.Fatalln(err)
-	}
+	var outputDir string
+	if version < 2 {
+		gopathCurrent, err := gopathCurrent()
+		if err != nil {
+			log.Fatalln(err)
+		}
 
-	// For some reason, the golang protobuf generator makes the god awful
-	// decision to output the files relative to the gopath root. It doesn't do
-	// this only in the case where you give it ".".
-	outputDir := filepath.Join(gopathCurrent, "src")
+		// For some reason, the golang protobuf generator makes the god awful
+		// decision to output the files relative to the gopath root. It doesn't do
+		// this only in the case where you give it ".".
+		outputDir = filepath.Join(gopathCurrent, "src")
+	} else {
+		wd, err := os.Getwd()
+		if err != nil {
+			log.Fatalln(err)
+		}
+		outputDir = wd
+	}
 
 	// Index overrides by target import path
 	overrides := map[string]struct {
@@ -205,6 +214,14 @@ func main() {
 			OutputDir:  outputDir,
 			Includes:   includes,
 			Version:    version,
+		}
+
+		if protoc.Version == 2 {
+			dir, err := os.Getwd()
+			if err != nil {
+				log.Fatalln(err)
+			}
+			protoc.Includes = append([]string{dir}, protoc.Includes...)
 		}
 
 		importDirPath, err := importPath(outputDir, pkg.Dir)

@@ -37,8 +37,7 @@ var (
 	{{ if lt .Version 2 }}
 		{{- range $index, $name := .Names }} --{{- $name -}}_out={{- $.GoOutV1 }}{{- end -}}
 	{{- else -}}
-		{{- range $index, $name := .Names }} --{{- $name -}}_out={{- $.GoOutV2 }}{{- end -}}
-
+		{{- range $index, $name := .Names }} --{{- $name -}}_out={{- $.GoOutV2 }} --{{$name}}_opt=paths=source_relative {{- end }}
 		{{- range $proto, $gopkg := .PackageMap }} --go_opt=M
 			{{- $proto}}={{$gopkg -}}
 		{{- end -}}

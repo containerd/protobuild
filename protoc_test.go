@@ -29,19 +29,19 @@ func TestMkcmd(t *testing.T) {
 			name:       "basic",
 			cmd:        protocCmd{Names: []string{"go"}},
 			expectedV1: "protoc -I --go_out=import_path=:",
-			expectedV2: "protoc -I --go_out=",
+			expectedV2: "protoc -I --go_out= --go_opt=paths=source_relative",
 		},
 		{
 			name:       "plugin",
 			cmd:        protocCmd{Names: []string{"go"}, Plugins: []string{"grpc"}},
 			expectedV1: "protoc -I --go_out=plugins=grpc,import_path=:",
-			expectedV2: "protoc -I --go_out=",
+			expectedV2: "protoc -I --go_out= --go_opt=paths=source_relative",
 		},
 		{
 			name:       "use protoc-gen-go-grpc instead of plugins",
 			cmd:        protocCmd{Names: []string{"go", "go-grpc"}},
 			expectedV1: "protoc -I --go_out=import_path=: --go-grpc_out=import_path=:",
-			expectedV2: "protoc -I --go_out= --go-grpc_out=",
+			expectedV2: "protoc -I --go_out= --go_opt=paths=source_relative --go-grpc_out= --go-grpc_opt=paths=source_relative",
 		},
 	}
 	for _, tc := range testcases {
