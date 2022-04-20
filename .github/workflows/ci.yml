@@ -118,18 +118,13 @@ jobs:
     - name: Setup environment
       shell: bash
       run: |
-        echo "GOPATH=${{ github.workspace }}" >> $GITHUB_ENV
         echo "${{ github.workspace }}/bin" >> $GITHUB_PATH
 
     - name: Check out code
       uses: actions/checkout@v2
-      with:
-        path: src/github.com/containerd/protobuild
 
     - name: Build
-      working-directory: src/github.com/containerd/protobuild
-      run: |
-        go build .
+      run: go build .
 
     - name: Install protoc
       run: |
@@ -144,7 +139,6 @@ jobs:
         go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.1
 
     - name: Run protobuild to see all committed auto-generated files can be generated as is
-      working-directory: src/github.com/containerd/protobuild
       run: |
         rm examples/v2/*.pb.*
         export PATH=$(go env GOBIN):$PATH
