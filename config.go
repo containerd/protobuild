@@ -32,6 +32,14 @@ type config struct {
 	// Deprecated: Use Generators instead.
 	Generator string
 
+	// Parameters are custom parameters to be passed to the generators.
+	// The parameter key must be the generator name with a table value
+	// of keys and string values to be passed.
+	// Example:
+	// [parameters.go-ttrpc]
+	// customkey = "somevalue"
+	Parameters map[string]map[string]string
+
 	// Plugins will be deprecated. It has to be per-Generator setting,
 	// but neither protoc-gen-go nor protoc-gen-go-grpc support plugins.
 	// So the refactoring is not worth to do.
@@ -52,6 +60,7 @@ type config struct {
 		// Deprecated: Use Generators instead.
 		Generator  string
 		Generators []string
+		Parameters map[string]map[string]string
 		Plugins    *[]string
 
 		// TODO(stevvooe): We could probably support overriding of includes and

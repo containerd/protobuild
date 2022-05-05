@@ -27,21 +27,43 @@ func TestMkcmd(t *testing.T) {
 	}{
 		{
 			name:       "basic",
-			cmd:        protocCmd{Names: []string{"go"}},
+			cmd:        protocCmd{Names: []string{"go"}, Generators: []generator{{Name: "go"}}},
 			expectedV1: "protoc -I --go_out=import_path=:",
 			expectedV2: "protoc -I --go_out=",
 		},
 		{
 			name:       "plugin",
-			cmd:        protocCmd{Names: []string{"go"}, Plugins: []string{"grpc"}},
+			cmd:        protocCmd{Names: []string{"go"}, Plugins: []string{"grpc"}, Generators: []generator{{Name: "go"}}},
 			expectedV1: "protoc -I --go_out=plugins=grpc,import_path=:",
 			expectedV2: "protoc -I --go_out=",
 		},
 		{
 			name:       "use protoc-gen-go-grpc instead of plugins",
-			cmd:        protocCmd{Names: []string{"go", "go-grpc"}},
+			cmd:        protocCmd{Names: []string{"go", "go-grpc"}, Generators: []generator{{Name: "go"}, {Name: "go-grpc"}}},
 			expectedV1: "protoc -I --go_out=import_path=: --go-grpc_out=import_path=:",
 			expectedV2: "protoc -I --go_out= --go-grpc_out=",
+		},
+		{
+			name: "use custom parameters",
+			cmd: protocCmd{
+				Names: []string{"go", "go-ttrpc"},
+				Generators: []generator{
+					{
+						Name: "go",
+						Parameters: map[string]string{
+							"Mpath": "newpath",
+						},
+					},
+					{
+						Name: "go-ttrpc",
+						Parameters: map[string]string{
+							"prefix": "TTRPC",
+						},
+					},
+				},
+			},
+			expectedV1: "protoc -I --go_out=import_path=: --go-ttrpc_out=import_path=:",
+			expectedV2: "protoc -I --go_out= --go_opt=Mpath=newpath --go-ttrpc_out= --go-ttrpc_opt=prefix=TTRPC",
 		},
 	}
 	for _, tc := range testcases {
