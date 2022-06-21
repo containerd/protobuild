@@ -10,6 +10,15 @@ version = "unstable"
 # The common example grpc is provided below.
 plugins = ["grpc"]
 
+# protoc-gen-go supports several output modes which control where generated
+# .pb.go files are placed.  The default "import" mode creates a directory tree
+# corresponding to the Go package specified in the .proto file.  This mode is
+# appropriate when working inside the GOPATH.  The "source_relative" mode may
+# be useful if you want your .pb.go files to be in the same directory as your
+# .proto files, which can be useful when working outside the GOPATH on a module.
+# See https://developers.google.com/protocol-buffers/docs/reference/go-generated#invocation
+output_mode = "source_relative"
+
 # Control protoc include paths. Below are usually some good defaults, but feel
 # free to try it without them if it works for your project.
 [includes]

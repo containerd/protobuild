@@ -202,6 +202,7 @@ func main() {
 			PackageMap: c.Packages,
 			Plugins:    c.Plugins,
 			Files:      pkg.ProtoFiles,
+			OutputMode: c.OutputMode,
 			OutputDir:  outputDir,
 			Includes:   includes,
 			Version:    version,

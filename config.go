@@ -44,6 +44,8 @@ type config struct {
 		After    []string
 	}
 
+	OutputMode string `toml:"output_mode"`
+
 	Packages map[string]string
 
 	Overrides []struct {

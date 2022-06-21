@@ -42,6 +42,8 @@ var (
 		{{- range $proto, $gopkg := .PackageMap }} --go_opt=M
 			{{- $proto}}={{$gopkg -}}
 		{{- end -}}
+
+		{{- if ne .OutputMode "" }} --go_opt=paths={{ .OutputMode }}{{- end -}}
 	{{- end -}}
 
 	{{- range .Files}} {{.}}{{end -}}
@@ -57,6 +59,7 @@ type protocCmd struct {
 	ImportPath  string
 	PackageMap  map[string]string
 	Files       []string
+	OutputMode  string
 	OutputDir   string
 	// Version is Protobuild's version.
 	Version int
@@ -91,6 +94,10 @@ func (p *protocCmd) GoOutV1() string {
 
 // GoOutV2 returns the parameter for --go_out= for protoc-gen-go >= 1.4.0.
 func (p *protocCmd) GoOutV2() string {
+	if p.OutputMode == "source_relative" {
+		path, _ := os.Getwd()
+		return path
+	}
 	return p.OutputDir
 }
 
