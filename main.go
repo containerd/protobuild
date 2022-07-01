@@ -110,6 +110,7 @@ func main() {
 		Prefixes   []string
 		Generator  string
 		Generators []string
+		Parameters map[string]map[string]string
 		Plugins    *[]string
 	}{}
 	for _, override := range c.Overrides {
@@ -197,14 +198,15 @@ func main() {
 		includes = append(includes, c.Includes.After...)
 
 		protoc := protocCmd{
-			Names:      c.Generators,
-			ImportPath: pkg.GoImportPath,
-			PackageMap: c.Packages,
-			Plugins:    c.Plugins,
+			Generators: generators(c.Generators, outputDir),
 			Files:      pkg.ProtoFiles,
 			OutputDir:  outputDir,
 			Includes:   includes,
 			Version:    version,
+			Names:      c.Generators,
+			Plugins:    c.Plugins,
+			ImportPath: pkg.GoImportPath,
+			PackageMap: c.Packages,
 		}
 
 		importDirPath, err := importPath(outputDir, pkg.Dir)
@@ -212,15 +214,35 @@ func main() {
 			log.Fatalln(err)
 		}
 
+		parameters := map[string]map[string]string{}
+		for proto, pkg := range c.Packages {
+			parameters["go"] = mergeMap(parameters["go"], map[string]string{
+				fmt.Sprintf("M%s", proto): pkg,
+			})
+		}
+
+		for k, v := range c.Parameters {
+			parameters[k] = mergeMap(parameters[k], v)
+		}
 		if override, ok := overrides[importDirPath]; ok {
 			// selectively apply the overrides to the protoc structure.
 			if len(override.Generators) > 0 {
 				protoc.Names = override.Generators
+				protoc.Generators = generators(override.Generators, outputDir)
 			}
 
 			if override.Plugins != nil {
 				protoc.Plugins = *override.Plugins
 			}
+
+			for k, v := range override.Parameters {
+				parameters[k] = mergeMap(parameters[k], v)
+			}
+		}
+
+		// Set parameters per generator
+		for i := range protoc.Generators {
+			protoc.Generators[i].Parameters = parameters[protoc.Generators[i].Name]
 		}
 
 		var (
@@ -303,6 +325,15 @@ func main() {
 			log.Fatalln(err)
 		}
 	}
+}
+
+func generators(names []string, outDir string) []generator {
+	g := make([]generator, len(names))
+	for i, name := range names {
+		g[i].Name = name
+		g[i].OutputDir = outDir
+	}
+	return g
 }
 
 type protoGoPkgInfo struct {
@@ -454,4 +485,16 @@ func closestVendorDir(dir string) (string, error) {
 	}
 
 	return "", errVendorNotFound
+}
+
+func mergeMap(m1, m2 map[string]string) map[string]string {
+	if m1 == nil {
+		m1 = map[string]string{}
+	}
+
+	for k, v := range m2 {
+		m1[k] = v
+	}
+
+	return m1
 }

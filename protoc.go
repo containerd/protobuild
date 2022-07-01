@@ -37,10 +37,8 @@ var (
 	{{ if lt .Version 2 }}
 		{{- range $index, $name := .Names }} --{{- $name -}}_out={{- $.GoOutV1 }}{{- end -}}
 	{{- else -}}
-		{{- range $index, $name := .Names }} --{{- $name -}}_out={{- $.GoOutV2 }}{{- end -}}
-
-		{{- range $proto, $gopkg := .PackageMap }} --go_opt=M
-			{{- $proto}}={{$gopkg -}}
+		{{- range $gen := .Generators }} --{{- $gen.Name -}}_out={{- $gen.OutputDir }}
+			{{- range $k, $v := $gen.Parameters }} --{{- $gen.Name -}}_opt={{- $k -}}={{- $v -}}{{- end -}}
 		{{- end -}}
 	{{- end -}}
 
@@ -48,18 +46,27 @@ var (
 `))
 )
 
+type generator struct {
+	Name       string
+	OutputDir  string
+	Parameters map[string]string
+}
+
 // protocParams defines inputs to a protoc command string.
 type protocCmd struct {
-	Names       []string
+	Generators  []generator
 	Includes    []string
-	Plugins     []string
 	Descriptors string
-	ImportPath  string
-	PackageMap  map[string]string
 	Files       []string
-	OutputDir   string
 	// Version is Protobuild's version.
 	Version int
+
+	// V1 fields
+	Names      []string
+	OutputDir  string
+	PackageMap map[string]string
+	Plugins    []string
+	ImportPath string
 }
 
 func (p *protocCmd) mkcmd() (string, error) {
@@ -87,11 +94,6 @@ func (p *protocCmd) GoOutV1() string {
 	result += ":" + p.OutputDir
 
 	return result
-}
-
-// GoOutV2 returns the parameter for --go_out= for protoc-gen-go >= 1.4.0.
-func (p *protocCmd) GoOutV2() string {
-	return p.OutputDir
 }
 
 func (p *protocCmd) run() error {
