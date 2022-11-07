@@ -54,6 +54,9 @@ func rewriteNode(pattern *regexp.Regexp, node ast.Node) {
 				}
 
 				for i := 0; i < len(match); i += 2 {
+					if match[i] == -1 {
+						continue
+					}
 					result += ident.Name[copied:match[i]]
 					result += strings.ToUpper(ident.Name[match[i]:match[i+1]])
 					copied = match[i+1]
