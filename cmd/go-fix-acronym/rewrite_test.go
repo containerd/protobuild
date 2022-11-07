@@ -46,7 +46,7 @@ func testRewrite(t *testing.T, input, expected string, c config) {
 	}
 }
 
-func TestRewriteSimple(t *testing.T) {
+func TestRewrite(t *testing.T) {
 	testcases := []struct {
 		name     string
 		input    string
@@ -80,6 +80,21 @@ func TestRewriteSimple(t *testing.T) {
 
 			func KernelTime_100Ns()            {}
 			func RuntimeNSAndNsAndSomeSuffix() {}`,
+		},
+		{
+			name: "Multiple submatches",
+			c:    config{acronyms: []string{"(Id|Vm)$", "[a-z](Ns)$"}},
+			input: `package main
+
+			func Vm()         {}
+			func Time_100Ns() {}
+			func RuntimeNs()  {}
+			`,
+			expected: `package main
+
+			func VM()         {}
+			func Time_100Ns() {}
+			func RuntimeNS()  {}`,
 		},
 	}
 	for _, tc := range testcases {
