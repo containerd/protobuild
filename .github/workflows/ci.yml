@@ -9,17 +9,17 @@ on:
 jobs:
   check:
     name: Project checks
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     timeout-minutes: 5
     steps:
     - name: Check out code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         path: src/github.com/containerd/protobuild
         fetch-depth: 25
 
     - name: Project checks
-      uses: containerd/project-checks@v1
+      uses: containerd/project-checks@v1.1.0
       with:
         working-directory: src/github.com/containerd/protobuild
 
@@ -27,13 +27,13 @@ jobs:
     name: Test
     strategy:
       matrix:
-        os: [ ubuntu-20.04, windows-2022 ]
+        os: [ ubuntu-22.04, windows-2022 ]
       fail-fast: false
     runs-on: ${{ matrix.os }}
     timeout-minutes: 5
     steps:
     - name: Check out code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         path: src/github.com/containerd/protobuild
         fetch-depth: 25
@@ -45,7 +45,7 @@ jobs:
         echo "${{ github.workspace }}/bin" >> $GITHUB_PATH
 
     - name: Check out code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         path: src/github.com/containerd/protobuild
 
@@ -56,12 +56,12 @@ jobs:
 
   v1:
     name: Run with protoc-gen-go v1.3.5
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     timeout-minutes: 5
     steps:
 
     - name: Set up Go
-      uses: actions/setup-go@v2
+      uses: actions/setup-go@v3
       with:
         go-version: 1.16.x
       id: go
@@ -73,7 +73,7 @@ jobs:
         echo "${{ github.workspace }}/bin" >> $GITHUB_PATH
 
     - name: Check out code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         path: src/github.com/containerd/protobuild
 
@@ -105,12 +105,12 @@ jobs:
 
   v2:
     name: Run with protoc-gen-go v1.26
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     timeout-minutes: 5
     steps:
 
     - name: Set up Go
-      uses: actions/setup-go@v2
+      uses: actions/setup-go@v3
       with:
         go-version: 1.16.x
       id: go
@@ -122,7 +122,7 @@ jobs:
         echo "${{ github.workspace }}/bin" >> $GITHUB_PATH
 
     - name: Check out code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         path: src/github.com/containerd/protobuild
 
