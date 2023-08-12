@@ -49,9 +49,6 @@ generators=["go"]
 			if err != nil {
 				t.Fatalf("err must be nil, but got %v", err)
 			}
-			if c.Generator == "go" {
-				t.Fatalf("Generator must be cleared, but got %v", c.Generator)
-			}
 			if len(c.Generators) != 1 || c.Generators[0] != "go" {
 				t.Fatalf("Generators must be [go], but got %v", c.Generators)
 			}

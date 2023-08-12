@@ -17,7 +17,6 @@
 package main
 
 import (
-	"fmt"
 	"io/ioutil"
 	"log"
 
@@ -28,10 +27,6 @@ type config struct {
 	Version    string
 	Generators []string
 
-	// Generator is a code generator which is used from protoc.
-	// Deprecated: Use Generators instead.
-	Generator string
-
 	// Parameters are custom parameters to be passed to the generators.
 	// The parameter key must be the generator name with a table value
 	// of keys and string values to be passed.
@@ -39,11 +34,6 @@ type config struct {
 	// [parameters.go-ttrpc]
 	// customkey = "somevalue"
 	Parameters map[string]map[string]string
-
-	// Plugins will be deprecated. It has to be per-Generator setting,
-	// but neither protoc-gen-go nor protoc-gen-go-grpc support plugins.
-	// So the refactoring is not worth to do.
-	Plugins []string
 
 	Includes struct {
 		Before   []string
@@ -56,12 +46,8 @@ type config struct {
 
 	Overrides []struct {
 		Prefixes []string
-		// Generator is a code generator which is used from protoc.
-		// Deprecated: Use Generators instead.
-		Generator  string
 		Generators []string
 		Parameters map[string]map[string]string
-		Plugins    *[]string
 
 		// TODO(stevvooe): We could probably support overriding of includes and
 		// package maps, but they don't seem to be as useful. Likely,
@@ -102,30 +88,6 @@ func readConfigFrom(p []byte) (config, error) {
 	c := newDefaultConfig()
 	if err := toml.Unmarshal(p, &c); err != nil {
 		log.Fatalln(err)
-	}
-
-	if c.Generator != "" {
-		if len(c.Generators) > 0 {
-			return config{}, fmt.Errorf(
-				`specify either "generators = %v" or "generator = %v", not both`,
-				c.Generators, c.Generator,
-			)
-		}
-		c.Generators = []string{c.Generator}
-		c.Generator = ""
-	}
-
-	for i, o := range c.Overrides {
-		if o.Generator != "" {
-			if len(o.Generators) > 0 {
-				return config{}, fmt.Errorf(
-					`specify either "overrides[%d].generators" or "overrides[%d].generator", not both`,
-					i, i,
-				)
-			}
-			c.Overrides[i].Generators = []string{o.Generator}
-			c.Overrides[i].Generator = ""
-		}
 	}
 
 	if len(c.Generators) == 0 {

@@ -18,11 +18,9 @@ package main
 
 import (
 	"bytes"
-	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
-	"strings"
 	"text/template"
 )
 
@@ -34,12 +32,8 @@ var (
 	{{- end -}}
 	{{- if .Descriptors}} --include_imports --descriptor_set_out={{.Descriptors}}{{- end -}}
 
-	{{ if lt .Version 2 }}
-		{{- range $index, $name := .Names }} --{{- $name -}}_out={{- $.GoOutV1 }}{{- end -}}
-	{{- else -}}
-		{{- range $gen := .Generators }} --{{- $gen.Name -}}_out={{- $gen.OutputDir }}
-			{{- range $k, $v := $gen.Parameters }} --{{- $gen.Name -}}_opt={{- $k -}}={{- $v -}}{{- end -}}
-		{{- end -}}
+	{{- range $gen := .Generators }} --{{- $gen.Name -}}_out={{- $gen.OutputDir }}
+		{{- range $k, $v := $gen.Parameters }} --{{- $gen.Name -}}_opt={{- $k -}}={{- $v -}}{{- end -}}
 	{{- end -}}
 
 	{{- range .Files}} {{.}}{{end -}}
@@ -58,15 +52,6 @@ type protocCmd struct {
 	Includes    []string
 	Descriptors string
 	Files       []string
-	// Version is Protobuild's version.
-	Version int
-
-	// V1 fields
-	Names      []string
-	OutputDir  string
-	PackageMap map[string]string
-	Plugins    []string
-	ImportPath string
 }
 
 func (p *protocCmd) mkcmd() (string, error) {
@@ -76,24 +61,6 @@ func (p *protocCmd) mkcmd() (string, error) {
 	}
 
 	return buf.String(), nil
-}
-
-// GoOutV1 returns the parameter for --go_out= for protoc-gen-go < 1.4.0.
-// Note that plugins and import_path are no longer supported by
-// newer protoc-gen-go versions.
-func (p *protocCmd) GoOutV1() string {
-	var result string
-	if len(p.Plugins) > 0 {
-		result += "plugins=" + strings.Join(p.Plugins, "+") + ","
-	}
-	result += "import_path=" + p.ImportPath
-
-	for proto, pkg := range p.PackageMap {
-		result += fmt.Sprintf(",M%s=%s", proto, pkg)
-	}
-	result += ":" + p.OutputDir
-
-	return result
 }
 
 func (p *protocCmd) run() error {

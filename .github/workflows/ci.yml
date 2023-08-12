@@ -54,55 +54,6 @@ jobs:
       run: |
         go test
 
-  v1:
-    name: Run with protoc-gen-go v1.3.5
-    runs-on: ubuntu-22.04
-    timeout-minutes: 5
-    steps:
-
-    - name: Set up Go
-      uses: actions/setup-go@v3
-      with:
-        go-version: 1.16.x
-      id: go
-
-    - name: Setup environment
-      shell: bash
-      run: |
-        echo "GOPATH=${{ github.workspace }}" >> $GITHUB_ENV
-        echo "${{ github.workspace }}/bin" >> $GITHUB_PATH
-
-    - name: Check out code
-      uses: actions/checkout@v3
-      with:
-        path: src/github.com/containerd/protobuild
-
-    - name: Build
-      working-directory: src/github.com/containerd/protobuild
-      run: |
-        go build .
-
-    - name: Install protoc
-      run: |
-        curl -LO https://github.com/protocolbuffers/protobuf/releases/download/v3.5.0/protoc-3.5.0-linux-x86_64.zip
-        sudo unzip -x protoc-3.5.0-linux-x86_64.zip -d /usr/local
-        sudo chmod -R go+rX /usr/local/include
-        sudo chmod go+x /usr/local/bin/protoc
-
-    # Both google.golang.org/protobuf/cmd/protoc-gen-go and github.com/golang/protobuf/protoc-gen-go > 1.4.0 don't
-    # support import_path. So this step has to use 1.3.x here.
-    - name: Install protoc-gen-go
-      run: |
-        go install github.com/golang/protobuf/protoc-gen-go@v1.3.5
-
-    - name: Run protobuild to see all committed auto-generated files can be generated as is
-      working-directory: src/github.com/containerd/protobuild
-      run: |
-        rm examples/foo/*.pb.* examples/bar/*.pb.* examples/nogrpc/*.pb.*
-        export PATH=$(go env GOBIN):$PATH
-        ./protobuild github.com/containerd/protobuild/examples/bar github.com/containerd/protobuild/examples/foo github.com/containerd/protobuild/examples/nogrpc
-        git diff --exit-code
-
   v2:
     name: Run with protoc-gen-go v1.26
     runs-on: ubuntu-22.04
@@ -148,5 +99,5 @@ jobs:
       run: |
         rm examples/v2/*.pb.*
         export PATH=$(go env GOBIN):$PATH
-        ./protobuild -f v2.toml github.com/containerd/protobuild/examples/v2
+        ./protobuild github.com/containerd/protobuild/examples/v2
         git diff --exit-code
