@@ -27,7 +27,6 @@ import (
 	"os/exec"
 	"path"
 	"path/filepath"
-	"strconv"
 	"strings"
 	"syscall"
 
@@ -49,19 +48,10 @@ func init() {
 }
 
 func parseVersion(s string) (int, error) {
-	if s == "unstable" {
-		return 0, nil
+	if s != "2" {
+		return 0, fmt.Errorf("unsupported file version %q: Protobuild >= 1.0.0 no longer supports the version", s)
 	}
-
-	v, err := strconv.Atoi(s)
-	if err != nil {
-		return 0, fmt.Errorf("unknown file version %q: %w", s, err)
-	}
-
-	if v < 1 || v > 2 {
-		return 0, fmt.Errorf(`unknown file version %q; valid versions are "unstable", "1" and "2"`, s)
-	}
-	return v, nil
+	return 2, nil
 }
 
 func importPath(base, target string) (string, error) {
@@ -80,7 +70,7 @@ func main() {
 		log.Fatalln(err)
 	}
 
-	version, err := parseVersion(c.Version)
+	_, err = parseVersion(c.Version)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -108,10 +98,8 @@ func main() {
 	// Index overrides by target import path
 	overrides := map[string]struct {
 		Prefixes   []string
-		Generator  string
 		Generators []string
 		Parameters map[string]map[string]string
-		Plugins    *[]string
 	}{}
 	for _, override := range c.Overrides {
 		for _, prefix := range override.Prefixes {
@@ -200,13 +188,7 @@ func main() {
 		protoc := protocCmd{
 			Generators: generators(c.Generators, outputDir),
 			Files:      pkg.ProtoFiles,
-			OutputDir:  outputDir,
 			Includes:   includes,
-			Version:    version,
-			Names:      c.Generators,
-			Plugins:    c.Plugins,
-			ImportPath: pkg.GoImportPath,
-			PackageMap: c.Packages,
 		}
 
 		importDirPath, err := importPath(outputDir, pkg.Dir)
@@ -227,12 +209,7 @@ func main() {
 		if override, ok := overrides[importDirPath]; ok {
 			// selectively apply the overrides to the protoc structure.
 			if len(override.Generators) > 0 {
-				protoc.Names = override.Generators
 				protoc.Generators = generators(override.Generators, outputDir)
-			}
-
-			if override.Plugins != nil {
-				protoc.Plugins = *override.Plugins
 			}
 
 			for k, v := range override.Parameters {

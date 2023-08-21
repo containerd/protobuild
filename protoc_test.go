@@ -27,26 +27,25 @@ func TestMkcmd(t *testing.T) {
 	}{
 		{
 			name:       "basic",
-			cmd:        protocCmd{Names: []string{"go"}, Generators: []generator{{Name: "go"}}},
+			cmd:        protocCmd{Generators: []generator{{Name: "go"}}},
 			expectedV1: "protoc -I --go_out=import_path=:",
 			expectedV2: "protoc -I --go_out=",
 		},
 		{
 			name:       "plugin",
-			cmd:        protocCmd{Names: []string{"go"}, Plugins: []string{"grpc"}, Generators: []generator{{Name: "go"}}},
+			cmd:        protocCmd{Generators: []generator{{Name: "go"}}},
 			expectedV1: "protoc -I --go_out=plugins=grpc,import_path=:",
 			expectedV2: "protoc -I --go_out=",
 		},
 		{
 			name:       "use protoc-gen-go-grpc instead of plugins",
-			cmd:        protocCmd{Names: []string{"go", "go-grpc"}, Generators: []generator{{Name: "go"}, {Name: "go-grpc"}}},
+			cmd:        protocCmd{Generators: []generator{{Name: "go"}, {Name: "go-grpc"}}},
 			expectedV1: "protoc -I --go_out=import_path=: --go-grpc_out=import_path=:",
 			expectedV2: "protoc -I --go_out= --go-grpc_out=",
 		},
 		{
 			name: "use custom parameters",
 			cmd: protocCmd{
-				Names: []string{"go", "go-ttrpc"},
 				Generators: []generator{
 					{
 						Name: "go",
@@ -67,22 +66,8 @@ func TestMkcmd(t *testing.T) {
 		},
 	}
 	for _, tc := range testcases {
-		t.Run(tc.name+"V1", func(t *testing.T) {
-			cmd := &tc.cmd
-			cmd.Version = 1
-
-			s, err := cmd.mkcmd()
-			if err != nil {
-				t.Fatalf("err must be nil but %+v", err)
-			}
-
-			if s != tc.expectedV1 {
-				t.Fatalf(`s must be %q, but %q`, tc.expectedV1, s)
-			}
-		})
 		t.Run(tc.name+"V2", func(t *testing.T) {
 			cmd := &tc.cmd
-			cmd.Version = 2
 
 			s, err := cmd.mkcmd()
 			if err != nil {
