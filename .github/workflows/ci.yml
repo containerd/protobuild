@@ -41,7 +41,6 @@ jobs:
     - name: Setup environment
       shell: bash
       run: |
-        echo "GOPATH=${{ github.workspace }}" >> $GITHUB_ENV
         echo "${{ github.workspace }}/bin" >> $GITHUB_PATH
 
     - name: Check out code
@@ -69,7 +68,6 @@ jobs:
     - name: Setup environment
       shell: bash
       run: |
-        echo "GOPATH=${{ github.workspace }}" >> $GITHUB_ENV
         echo "${{ github.workspace }}/bin" >> $GITHUB_PATH
 
     - name: Check out code
